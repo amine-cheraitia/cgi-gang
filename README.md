@@ -281,10 +281,56 @@ Contrat securite couvre identifiants invalides -> `AUTH-002`.
 - controller / controller123 -> CONTROLLER
 - buyer / buyer123 -> BUYER
 
-## Lancement tests
+## Lancement des tests (tous types)
+
+### 1) Tests unitaires + integration (quotidien)
 
 ```bash
 mvn test
+```
+
+### 2) Build complet avec verifications qualite (CI-like)
+
+```bash
+mvn -B clean verify
+```
+
+Inclut notamment:
+- compilation + tests
+- gate couverture JaCoCo
+
+### 3) Tests de mutation (PIT)
+
+Prerequis important (classpath multi-modules local):
+
+```bash
+mvn -B -DskipTests -Djacoco.skip=true install
+```
+
+## Tests de mutation (PIT)
+
+Execution module par module (mutants croises entre couches metier/infra via les tests existants):
+
+```bash
+mvn -Pmutation -pl marketplace-domain org.pitest:pitest-maven:mutationCoverage
+mvn -Pmutation -pl marketplace-application org.pitest:pitest-maven:mutationCoverage
+mvn -Pmutation -pl marketplace-infrastructure org.pitest:pitest-maven:mutationCoverage
+```
+
+Rapports HTML:
+
+- `marketplace-domain/target/pit-reports/index.html`
+- `marketplace-application/target/pit-reports/index.html`
+- `marketplace-infrastructure/target/pit-reports/index.html`
+
+### 4) Campagne complete recommandee avant rendu
+
+```bash
+mvn -B clean verify
+mvn -B -DskipTests -Djacoco.skip=true install
+mvn -Pmutation -pl marketplace-domain org.pitest:pitest-maven:mutationCoverage
+mvn -Pmutation -pl marketplace-application org.pitest:pitest-maven:mutationCoverage
+mvn -Pmutation -pl marketplace-infrastructure org.pitest:pitest-maven:mutationCoverage
 ```
 
 ## Swagger / OpenAPI
