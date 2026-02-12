@@ -260,6 +260,7 @@ flowchart LR
 Cas anormal couvert: indisponibilite provider catalogue -> `CAT-002`.
 Cas limite couvert: webhook paiement `PAID` rejoue -> traitement idempotent (pas de notification dupliquee).
 Contrat validation couvre les endpoints recents: payload/params invalides -> `GEN-001`.
+Contrat securite couvre identifiants invalides -> `AUTH-002`.
 - `POST /api/listings`
 - `POST /api/listings/{listingId}/attachments`
 - `POST /api/listings/{listingId}/attachments/presign`

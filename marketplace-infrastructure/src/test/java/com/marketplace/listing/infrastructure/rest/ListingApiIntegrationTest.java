@@ -57,6 +57,13 @@ class ListingApiIntegrationTest {
                 .content(payload))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.status").value("PENDING_CERTIFICATION"));
+
+        mockMvc.perform(post("/api/listings")
+                .with(httpBasic("seller", "wrong-password"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.code").value("AUTH-002"));
     }
 
     @Test

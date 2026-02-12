@@ -7,8 +7,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
@@ -44,12 +44,16 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex
-                .authenticationEntryPoint((request, response, authException) ->
-                    writeError(response, ErrorCode.AUTH_REQUIRED))
                 .accessDeniedHandler((request, response, accessDeniedException) ->
                     writeError(response, ErrorCode.ACCESS_DENIED))
             )
-            .httpBasic(Customizer.withDefaults());
+            .httpBasic(httpBasic -> httpBasic.authenticationEntryPoint((request, response, authException) -> {
+                if (authException instanceof BadCredentialsException) {
+                    writeError(response, ErrorCode.AUTH_BAD_CREDENTIALS);
+                    return;
+                }
+                writeError(response, ErrorCode.AUTH_REQUIRED);
+            }));
         return http.build();
     }
 
