@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.23.xsd">
+
+    <changeSet id="003-add-user-email" author="assistant">
+        <addColumn tableName="users">
+            <column name="email" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="003-fill-user-emails" author="assistant">
+        <update tableName="users">
+            <column name="email" value="seller@marketplace.local"/>
+            <where>id = 'seller-seed-1'</where>
+        </update>
+        <update tableName="users">
+            <column name="email" value="seller2@marketplace.local"/>
+            <where>id = 'seller-seed-2'</where>
+        </update>
+        <update tableName="users">
+            <column name="email" value="buyer@marketplace.local"/>
+            <where>id = 'buyer-seed-1'</where>
+        </update>
+        <update tableName="users">
+            <column name="email" value="controller@marketplace.local"/>
+            <where>id = 'controller-seed-1'</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="003-user-email-constraints" author="assistant">
+        <addNotNullConstraint tableName="users" columnName="email" columnDataType="varchar(255)"/>
+        <addUniqueConstraint tableName="users" columnNames="email" constraintName="uk_users_email"/>
+    </changeSet>
+
+</databaseChangeLog>

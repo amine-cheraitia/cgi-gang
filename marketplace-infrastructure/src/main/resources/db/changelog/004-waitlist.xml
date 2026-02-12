@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.23.xsd">
+
+    <changeSet id="004-waitlist-subscriptions" author="assistant">
+        <createTable tableName="waitlist_subscriptions">
+            <column name="id" type="varchar(64)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="event_id" type="varchar(120)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="varchar(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addUniqueConstraint tableName="waitlist_subscriptions"
+                             columnNames="event_id,user_id"
+                             constraintName="uk_waitlist_event_user"/>
+
+        <addForeignKeyConstraint baseTableName="waitlist_subscriptions"
+                                 baseColumnNames="user_id"
+                                 referencedTableName="users"
+                                 referencedColumnNames="id"
+                                 constraintName="fk_waitlist_user"/>
+    </changeSet>
+</databaseChangeLog>

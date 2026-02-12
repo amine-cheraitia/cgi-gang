@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.23.xsd">
+
+    <changeSet id="001-users" author="assistant">
+        <createTable tableName="users">
+            <column name="id" type="varchar(64)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="username" type="varchar(100)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="role" type="varchar(30)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="001-listings" author="assistant">
+        <createTable tableName="listings">
+            <column name="id" type="varchar(64)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="event_id" type="varchar(120)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="seller_id" type="varchar(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="decimal(19,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency" type="varchar(3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="varchar(40)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="listings"
+                                 baseColumnNames="seller_id"
+                                 referencedTableName="users"
+                                 referencedColumnNames="id"
+                                 constraintName="fk_listing_seller"/>
+    </changeSet>
+
+    <changeSet id="001-orders" author="assistant">
+        <createTable tableName="orders">
+            <column name="id" type="varchar(64)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="listing_id" type="varchar(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="buyer_id" type="varchar(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="seller_id" type="varchar(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ticket_price" type="decimal(19,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="seller_fee" type="decimal(19,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="service_fee" type="decimal(19,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="transaction_fee" type="decimal(19,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="buyer_total" type="decimal(19,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="seller_payout" type="decimal(19,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="platform_revenue" type="decimal(19,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency" type="varchar(3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="varchar(30)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="orders"
+                                 baseColumnNames="listing_id"
+                                 referencedTableName="listings"
+                                 referencedColumnNames="id"
+                                 constraintName="fk_order_listing"/>
+        <addForeignKeyConstraint baseTableName="orders"
+                                 baseColumnNames="buyer_id"
+                                 referencedTableName="users"
+                                 referencedColumnNames="id"
+                                 constraintName="fk_order_buyer"/>
+        <addForeignKeyConstraint baseTableName="orders"
+                                 baseColumnNames="seller_id"
+                                 referencedTableName="users"
+                                 referencedColumnNames="id"
+                                 constraintName="fk_order_seller"/>
+    </changeSet>
+
+    <changeSet id="001-checks" author="assistant">
+        <sql>
+            ALTER TABLE orders ADD CONSTRAINT chk_money_conservation
+            CHECK (buyer_total = seller_payout + platform_revenue);
+        </sql>
+        <sql>
+            ALTER TABLE orders ADD CONSTRAINT chk_buyer_total
+            CHECK (buyer_total = ticket_price + service_fee + transaction_fee);
+        </sql>
+        <sql>
+            ALTER TABLE orders ADD CONSTRAINT chk_seller_payout
+            CHECK (seller_payout = ticket_price - seller_fee);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

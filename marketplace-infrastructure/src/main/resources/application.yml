@@ -1,0 +1,34 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:marketplace;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.xml
+  h2:
+    console:
+      enabled: true
+
+brevo:
+  api-key: ${BREVO_API_KEY:}
+  sender-email: noreply@marketplace.local
+  sender-name: Marketplace API
+
+storage:
+  provider: local
+  local:
+    root-path: ./data/storage
+    public-base-url: http://localhost:8080/files
+  s3:
+    bucket: ${STORAGE_S3_BUCKET:}
+    region: ${STORAGE_S3_REGION:}
+    signed-url-duration-seconds: ${STORAGE_S3_SIGNED_URL_DURATION_SECONDS:900}
