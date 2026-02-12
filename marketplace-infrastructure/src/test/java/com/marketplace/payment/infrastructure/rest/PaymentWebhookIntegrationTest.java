@@ -116,4 +116,51 @@ class PaymentWebhookIntegrationTest {
                 .content(webhookPayload))
             .andExpect(status().isAccepted());
     }
+
+    @Test
+    @DisplayName("Webhook PAID rejoue est idempotent et ne casse pas le flux")
+    void shouldBeIdempotentWhenPaidWebhookIsRetried() throws Exception {
+        String payloadOrder = """
+            {
+              "listingId":"lst_seed_001",
+              "buyerId":"buyer-seed-1"
+            }
+            """;
+
+        String orderBody = mockMvc.perform(post("/api/orders")
+                .with(httpBasic("buyer", "buyer123"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payloadOrder))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+        String orderId = orderBody.replaceAll(".*\"orderId\":\"([^\"]+)\".*", "$1");
+        String webhookPayload = """
+            {
+              "orderId":"%s",
+              "status":"PAID",
+              "providerTransactionId":"tx_456"
+            }
+            """.formatted(orderId);
+
+        mockMvc.perform(post("/api/payments/webhooks")
+                .header("X-Payment-Webhook-Token", "test-webhook-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(webhookPayload))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("PAID"));
+
+        int emailsAfterFirstCall = fakeEmailSender.sentEmails().size();
+
+        mockMvc.perform(post("/api/payments/webhooks")
+                .header("X-Payment-Webhook-Token", "test-webhook-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(webhookPayload))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("PAID"));
+
+        assertThat(fakeEmailSender.sentEmails().size()).isEqualTo(emailsAfterFirstCall);
+    }
 }
