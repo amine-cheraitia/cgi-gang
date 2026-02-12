@@ -14,6 +14,7 @@ API REST modulaire pour revente de billets avec clean architecture, DDD, royalti
 - Qualite :
   - TU domaine + application
   - TI REST + security + non-regression erreurs/templates
+  - gate JaCoCo avec couverture minimale line `>= 30%` verifiee au `mvn verify` (et donc en CI)
 - Infra :
   - Liquibase + seeds
   - stockage abstrait `ObjectStorage` avec switch config `storage.provider=local|s3`
