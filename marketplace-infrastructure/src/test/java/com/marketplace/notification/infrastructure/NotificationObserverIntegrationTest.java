@@ -180,4 +180,53 @@ class NotificationObserverIntegrationTest {
                 assertThat(email.body()).contains("65.00 EUR");
             });
     }
+
+    @Test
+    @DisplayName("Observer: waitlist utilise le nom evenement catalogue quand disponible")
+    void waitlistNotificationShouldUseCatalogEventNameWhenAvailable() throws Exception {
+        String waitlistPayload = """
+            {
+              "eventId":"evt_psg_om",
+              "userId":"buyer-seed-1"
+            }
+            """;
+
+        mockMvc.perform(post("/api/waitlist/subscriptions")
+                .with(httpBasic("buyer", "buyer123"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(waitlistPayload))
+            .andExpect(status().isCreated());
+
+        String listingPayload = """
+            {
+              "eventId":"evt_psg_om",
+              "sellerId":"seller-seed-1",
+              "price":66.00,
+              "currency":"EUR"
+            }
+            """;
+
+        String body = mockMvc.perform(post("/api/listings")
+                .with(httpBasic("seller", "seller123"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(listingPayload))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+        String listingId = body.replaceAll(".*\"id\":\"([^\"]+)\".*", "$1");
+
+        mockMvc.perform(post("/api/certification/{id}/certify", listingId)
+                .with(httpBasic("controller", "controller123")))
+            .andExpect(status().isOk());
+
+        assertThat(fakeEmailSender.sentEmails())
+            .anySatisfy(email -> {
+                assertThat(email.to()).isEqualTo("buyer@marketplace.local");
+                assertThat(email.subject()).isEqualTo("Billets disponibles");
+                assertThat(email.body()).contains("PSG vs OM");
+                assertThat(email.body()).contains("66.00 EUR");
+            });
+    }
 }

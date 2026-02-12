@@ -65,6 +65,7 @@ API REST modulaire pour revente de billets avec clean architecture, DDD, royalti
 | `WAITLIST_TICKETS_AVAILABLE` | `eventName`, `startingPrice` | `Billets disponibles` |
 
 Regle de validation stricte: tout payload incomplet retourne `NTF-001`.
+Politique waitlist: si l'evenement existe au catalogue, le template utilise son nom metier (sinon fallback sur l'identifiant).
 
 ## Diagramme de classes - Observer applicatif (Notification)
 
