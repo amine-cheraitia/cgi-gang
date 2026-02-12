@@ -40,6 +40,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/payments/webhooks").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/orders/**").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/waitlist/subscriptions").hasRole("BUYER")
+                .requestMatchers(HttpMethod.DELETE, "/api/waitlist/subscriptions").hasRole("BUYER")
                 .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex

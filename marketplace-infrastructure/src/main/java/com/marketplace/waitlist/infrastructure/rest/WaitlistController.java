@@ -1,9 +1,12 @@
 package com.marketplace.waitlist.infrastructure.rest;
 
 import com.marketplace.waitlist.application.usecase.SubscribeWaitlistUseCase;
+import com.marketplace.waitlist.application.usecase.UnsubscribeWaitlistUseCase;
 import com.marketplace.waitlist.infrastructure.rest.dto.WaitlistSubscriptionRequest;
 import com.marketplace.waitlist.infrastructure.rest.dto.WaitlistSubscriptionResponse;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,9 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/waitlist/subscriptions")
 public class WaitlistController {
     private final SubscribeWaitlistUseCase subscribeWaitlistUseCase;
+    private final UnsubscribeWaitlistUseCase unsubscribeWaitlistUseCase;
 
-    public WaitlistController(SubscribeWaitlistUseCase subscribeWaitlistUseCase) {
+    public WaitlistController(SubscribeWaitlistUseCase subscribeWaitlistUseCase,
+                              UnsubscribeWaitlistUseCase unsubscribeWaitlistUseCase) {
         this.subscribeWaitlistUseCase = subscribeWaitlistUseCase;
+        this.unsubscribeWaitlistUseCase = unsubscribeWaitlistUseCase;
     }
 
     @PostMapping
@@ -26,5 +32,11 @@ public class WaitlistController {
         return WaitlistSubscriptionResponse.from(
             subscribeWaitlistUseCase.execute(request.eventId(), request.userId())
         );
+    }
+
+    @DeleteMapping
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void unsubscribe(@RequestParam String eventId, @RequestParam String userId) {
+        unsubscribeWaitlistUseCase.execute(eventId, userId);
     }
 }

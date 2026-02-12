@@ -269,6 +269,7 @@ Cas limite couvert: webhook paiement `PAID` rejoue -> traitement idempotent (pas
 - `POST /api/orders/{orderId}/pay`
 - `POST /api/payments/webhooks`
 - `POST /api/waitlist/subscriptions`
+- `DELETE /api/waitlist/subscriptions?eventId=...&userId=...`
 
 ## Security (HTTP Basic)
 

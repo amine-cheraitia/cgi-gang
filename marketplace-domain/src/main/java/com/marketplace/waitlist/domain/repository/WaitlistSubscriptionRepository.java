@@ -10,4 +10,6 @@ public interface WaitlistSubscriptionRepository {
     boolean existsByEventIdAndUserId(String eventId, String userId);
 
     List<WaitlistSubscription> findByEventId(String eventId);
+
+    boolean deleteByEventIdAndUserId(String eventId, String userId);
 }

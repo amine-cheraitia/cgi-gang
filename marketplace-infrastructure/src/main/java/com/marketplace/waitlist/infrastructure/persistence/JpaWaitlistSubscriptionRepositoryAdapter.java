@@ -41,4 +41,9 @@ public class JpaWaitlistSubscriptionRepositoryAdapter implements WaitlistSubscri
             ))
             .toList();
     }
+
+    @Override
+    public boolean deleteByEventIdAndUserId(String eventId, String userId) {
+        return repository.deleteByEventIdAndUserId(eventId, userId) > 0;
+    }
 }
