@@ -6,11 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -89,5 +91,70 @@ class ListingApiIntegrationTest {
                 .with(httpBasic("controller", "controller123")))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("CERTIFIED"));
+    }
+
+    @Test
+    @DisplayName("POST /api/listings/{id}/attachments upload une piece pour le vendeur")
+    void shouldUploadListingAttachment() throws Exception {
+        String payload = """
+            {
+              "eventId":"evt_attach",
+              "sellerId":"seller-seed-1",
+              "price":95.00,
+              "currency":"EUR"
+            }
+            """;
+
+        String body = mockMvc.perform(post("/api/listings")
+                .with(httpBasic("seller", "seller123"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+        String listingId = body.replaceAll(".*\"id\":\"([^\"]+)\".*", "$1");
+        MockMultipartFile file = new MockMultipartFile("file", "proof.pdf", "application/pdf", "ok".getBytes());
+
+        mockMvc.perform(multipart("/api/listings/{listingId}/attachments", listingId)
+                .file(file)
+                .param("sellerId", "seller-seed-1")
+                .with(httpBasic("seller", "seller123")))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.key").exists())
+            .andExpect(jsonPath("$.url").exists());
+    }
+
+    @Test
+    @DisplayName("POST /api/listings/{id}/attachments refuse un autre seller")
+    void shouldRejectListingAttachmentWhenSellerMismatch() throws Exception {
+        String payload = """
+            {
+              "eventId":"evt_attach_forbidden",
+              "sellerId":"seller-seed-1",
+              "price":90.00,
+              "currency":"EUR"
+            }
+            """;
+
+        String body = mockMvc.perform(post("/api/listings")
+                .with(httpBasic("seller", "seller123"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+        String listingId = body.replaceAll(".*\"id\":\"([^\"]+)\".*", "$1");
+        MockMultipartFile file = new MockMultipartFile("file", "proof.pdf", "application/pdf", "ok".getBytes());
+
+        mockMvc.perform(multipart("/api/listings/{listingId}/attachments", listingId)
+                .file(file)
+                .param("sellerId", "seller-seed-2")
+                .with(httpBasic("seller", "seller123")))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.code").value("LST-004"));
     }
 }
