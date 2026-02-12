@@ -1,29 +1,21 @@
 package com.marketplace.listing.infrastructure.rest;
 
+import com.marketplace.testutil.IntegrationTestBase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
+import static com.marketplace.testutil.ApiTestAssertions.assertErrorCode;
+import static com.marketplace.testutil.MarketplaceTestDataFactory.listingPayload;
+import static com.marketplace.testutil.MarketplaceTestDataFactory.presignPayload;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-class ListingApiIntegrationTest {
-
-    @Autowired
-    private MockMvc mockMvc;
+class ListingApiIntegrationTest extends IntegrationTestBase {
 
     @Test
     @DisplayName("GET /api/listings expose uniquement les listings certifies")
@@ -36,50 +28,36 @@ class ListingApiIntegrationTest {
     @Test
     @DisplayName("POST /api/listings exige authentification SELLER")
     void shouldRequireSellerAuthenticationToCreateListing() throws Exception {
-        String payload = """
-            {
-              "eventId":"evt_new",
-              "sellerId":"seller-seed-1",
-              "price":70.00,
-              "currency":"EUR"
-            }
-            """;
+        String payload = listingPayload("evt_new", "seller-seed-1", 70.00, "EUR");
 
-        mockMvc.perform(post("/api/listings")
+        assertErrorCode(mockMvc.perform(post("/api/listings")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(payload))
-            .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.code").value("AUTH-001"));
+                .content(payload)),
+            401,
+            "AUTH-001");
 
         mockMvc.perform(post("/api/listings")
-                .with(httpBasic("seller", "seller123"))
+                .with(sellerAuth())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.status").value("PENDING_CERTIFICATION"));
 
-        mockMvc.perform(post("/api/listings")
-                .with(httpBasic("seller", "wrong-password"))
+        assertErrorCode(mockMvc.perform(post("/api/listings")
+                .with(invalidSellerAuth())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(payload))
-            .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.code").value("AUTH-002"));
+                .content(payload)),
+            401,
+            "AUTH-002");
     }
 
     @Test
     @DisplayName("POST /api/certification/{id}/certify exige role CONTROLLER")
     void shouldRequireControllerRoleForCertification() throws Exception {
-        String payload = """
-            {
-              "eventId":"evt_cert",
-              "sellerId":"seller-seed-1",
-              "price":90.00,
-              "currency":"EUR"
-            }
-            """;
+        String payload = listingPayload("evt_cert", "seller-seed-1", 90.00, "EUR");
 
         String body = mockMvc.perform(post("/api/listings")
-                .with(httpBasic("seller", "seller123"))
+                .with(sellerAuth())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isCreated())
@@ -87,15 +65,15 @@ class ListingApiIntegrationTest {
             .getResponse()
             .getContentAsString();
 
-        String listingId = body.replaceAll(".*\"id\":\"([^\"]+)\".*", "$1");
+        String listingId = extractStringField(body, "id");
+
+        assertErrorCode(mockMvc.perform(post("/api/certification/{listingId}/certify", listingId)
+                .with(sellerAuth())),
+            403,
+            "AUTH-003");
 
         mockMvc.perform(post("/api/certification/{listingId}/certify", listingId)
-                .with(httpBasic("seller", "seller123")))
-            .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.code").value("AUTH-003"));
-
-        mockMvc.perform(post("/api/certification/{listingId}/certify", listingId)
-                .with(httpBasic("controller", "controller123")))
+                .with(controllerAuth()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("CERTIFIED"));
     }
@@ -103,17 +81,10 @@ class ListingApiIntegrationTest {
     @Test
     @DisplayName("POST /api/listings/{id}/attachments upload une piece pour le vendeur")
     void shouldUploadListingAttachment() throws Exception {
-        String payload = """
-            {
-              "eventId":"evt_attach",
-              "sellerId":"seller-seed-1",
-              "price":95.00,
-              "currency":"EUR"
-            }
-            """;
+        String payload = listingPayload("evt_attach", "seller-seed-1", 95.00, "EUR");
 
         String body = mockMvc.perform(post("/api/listings")
-                .with(httpBasic("seller", "seller123"))
+                .with(sellerAuth())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isCreated())
@@ -121,13 +92,13 @@ class ListingApiIntegrationTest {
             .getResponse()
             .getContentAsString();
 
-        String listingId = body.replaceAll(".*\"id\":\"([^\"]+)\".*", "$1");
+        String listingId = extractStringField(body, "id");
         MockMultipartFile file = new MockMultipartFile("file", "proof.pdf", "application/pdf", "ok".getBytes());
 
         mockMvc.perform(multipart("/api/listings/{listingId}/attachments", listingId)
                 .file(file)
                 .param("sellerId", "seller-seed-1")
-                .with(httpBasic("seller", "seller123")))
+                .with(sellerAuth()))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.key").exists())
             .andExpect(jsonPath("$.url").exists());
@@ -135,12 +106,12 @@ class ListingApiIntegrationTest {
         String response = mockMvc.perform(multipart("/api/listings/{listingId}/attachments", listingId)
                 .file(file)
                 .param("sellerId", "seller-seed-1")
-                .with(httpBasic("seller", "seller123")))
+                .with(sellerAuth()))
             .andExpect(status().isCreated())
             .andReturn()
             .getResponse()
             .getContentAsString();
-        String key = response.replaceAll(".*\"key\":\"([^\"]+)\".*", "$1");
+        String key = extractStringField(response, "key");
 
         mockMvc.perform(get("/files/{key}", key))
             .andExpect(status().isOk());
@@ -149,17 +120,10 @@ class ListingApiIntegrationTest {
     @Test
     @DisplayName("POST /api/listings/{id}/attachments refuse un autre seller")
     void shouldRejectListingAttachmentWhenSellerMismatch() throws Exception {
-        String payload = """
-            {
-              "eventId":"evt_attach_forbidden",
-              "sellerId":"seller-seed-1",
-              "price":90.00,
-              "currency":"EUR"
-            }
-            """;
+        String payload = listingPayload("evt_attach_forbidden", "seller-seed-1", 90.00, "EUR");
 
         String body = mockMvc.perform(post("/api/listings")
-                .with(httpBasic("seller", "seller123"))
+                .with(sellerAuth())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isCreated())
@@ -167,31 +131,24 @@ class ListingApiIntegrationTest {
             .getResponse()
             .getContentAsString();
 
-        String listingId = body.replaceAll(".*\"id\":\"([^\"]+)\".*", "$1");
+        String listingId = extractStringField(body, "id");
         MockMultipartFile file = new MockMultipartFile("file", "proof.pdf", "application/pdf", "ok".getBytes());
 
-        mockMvc.perform(multipart("/api/listings/{listingId}/attachments", listingId)
+        assertErrorCode(mockMvc.perform(multipart("/api/listings/{listingId}/attachments", listingId)
                 .file(file)
                 .param("sellerId", "seller-seed-2")
-                .with(httpBasic("seller", "seller123")))
-            .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.code").value("LST-004"));
+                .with(sellerAuth())),
+            403,
+            "LST-004");
     }
 
     @Test
     @DisplayName("POST /api/listings/{id}/attachments/presign retourne LST-005 en provider local")
     void shouldReturnPresignUnavailableOnLocalProvider() throws Exception {
-        String payload = """
-            {
-              "eventId":"evt_presign_local",
-              "sellerId":"seller-seed-1",
-              "price":88.00,
-              "currency":"EUR"
-            }
-            """;
+        String payload = listingPayload("evt_presign_local", "seller-seed-1", 88.00, "EUR");
 
         String body = mockMvc.perform(post("/api/listings")
-                .with(httpBasic("seller", "seller123"))
+                .with(sellerAuth())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isCreated())
@@ -199,37 +156,24 @@ class ListingApiIntegrationTest {
             .getResponse()
             .getContentAsString();
 
-        String listingId = body.replaceAll(".*\"id\":\"([^\"]+)\".*", "$1");
-        String presignPayload = """
-            {
-              "sellerId":"seller-seed-1",
-              "filename":"proof.pdf",
-              "contentType":"application/pdf"
-            }
-            """;
+        String listingId = extractStringField(body, "id");
+        String presignRequestPayload = presignPayload("seller-seed-1", "proof.pdf", "application/pdf");
 
-        mockMvc.perform(post("/api/listings/{listingId}/attachments/presign", listingId)
-                .with(httpBasic("seller", "seller123"))
+        assertErrorCode(mockMvc.perform(post("/api/listings/{listingId}/attachments/presign", listingId)
+                .with(sellerAuth())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(presignPayload))
-            .andExpect(status().isServiceUnavailable())
-            .andExpect(jsonPath("$.code").value("LST-005"));
+                .content(presignRequestPayload)),
+            503,
+            "LST-005");
     }
 
     @Test
     @DisplayName("POST /api/listings/{id}/attachments/presign valide les champs requis")
     void shouldValidatePresignRequestPayload() throws Exception {
-        String payload = """
-            {
-              "eventId":"evt_presign_validation",
-              "sellerId":"seller-seed-1",
-              "price":88.00,
-              "currency":"EUR"
-            }
-            """;
+        String payload = listingPayload("evt_presign_validation", "seller-seed-1", 88.00, "EUR");
 
         String body = mockMvc.perform(post("/api/listings")
-                .with(httpBasic("seller", "seller123"))
+                .with(sellerAuth())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isCreated())
@@ -237,7 +181,7 @@ class ListingApiIntegrationTest {
             .getResponse()
             .getContentAsString();
 
-        String listingId = body.replaceAll(".*\"id\":\"([^\"]+)\".*", "$1");
+        String listingId = extractStringField(body, "id");
         String invalidPayload = """
             {
               "sellerId":"seller-seed-1",
@@ -245,11 +189,11 @@ class ListingApiIntegrationTest {
             }
             """;
 
-        mockMvc.perform(post("/api/listings/{listingId}/attachments/presign", listingId)
-                .with(httpBasic("seller", "seller123"))
+        assertErrorCode(mockMvc.perform(post("/api/listings/{listingId}/attachments/presign", listingId)
+                .with(sellerAuth())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(invalidPayload))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value("GEN-001"));
+                .content(invalidPayload)),
+            400,
+            "GEN-001");
     }
 }

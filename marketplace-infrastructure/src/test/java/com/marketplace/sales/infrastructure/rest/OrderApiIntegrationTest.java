@@ -1,39 +1,25 @@
 package com.marketplace.sales.infrastructure.rest;
 
+import com.marketplace.testutil.IntegrationTestBase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
+import static com.marketplace.testutil.ApiTestAssertions.assertErrorCode;
+import static com.marketplace.testutil.MarketplaceTestDataFactory.orderPayload;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-class OrderApiIntegrationTest {
-
-    @Autowired
-    private MockMvc mockMvc;
+class OrderApiIntegrationTest extends IntegrationTestBase {
 
     @Test
     @DisplayName("POST /api/orders cree une commande avec pricing complet")
     void shouldCreateOrderWithPricing() throws Exception {
-        String payload = """
-            {
-              "listingId":"lst_seed_001",
-              "buyerId":"buyer-seed-1"
-            }
-            """;
+        String payload = orderPayload("lst_seed_001", "buyer-seed-1");
 
         mockMvc.perform(post("/api/orders")
-                .with(httpBasic("buyer", "buyer123"))
+                .with(buyerAuth())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isCreated())
@@ -49,51 +35,34 @@ class OrderApiIntegrationTest {
     @Test
     @DisplayName("POST /api/orders refuse un listing non certifie")
     void shouldRejectIfListingIsNotCertified() throws Exception {
-        String payload = """
-            {
-              "listingId":"lst_seed_002",
-              "buyerId":"buyer-seed-1"
-            }
-            """;
-
-        mockMvc.perform(post("/api/orders")
-                .with(httpBasic("buyer", "buyer123"))
+        String payload = orderPayload("lst_seed_002", "buyer-seed-1");
+        assertErrorCode(mockMvc.perform(post("/api/orders")
+                .with(buyerAuth())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(payload))
-            .andExpect(status().isConflict())
-            .andExpect(jsonPath("$.code").value("LST-002"));
+                .content(payload)),
+            409,
+            "LST-002");
     }
 
     @Test
     @DisplayName("POST /api/orders exige role BUYER")
     void shouldRequireBuyerRole() throws Exception {
-        String payload = """
-            {
-              "listingId":"lst_seed_001",
-              "buyerId":"buyer-seed-1"
-            }
-            """;
-
-        mockMvc.perform(post("/api/orders")
-                .with(httpBasic("seller", "seller123"))
+        String payload = orderPayload("lst_seed_001", "buyer-seed-1");
+        assertErrorCode(mockMvc.perform(post("/api/orders")
+                .with(sellerAuth())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(payload))
-            .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.code").value("AUTH-003"));
+                .content(payload)),
+            403,
+            "AUTH-003");
     }
 
     @Test
     @DisplayName("POST /api/orders/{id}/pay confirme le paiement")
     void shouldMarkOrderAsPaid() throws Exception {
-        String payload = """
-            {
-              "listingId":"lst_seed_001",
-              "buyerId":"buyer-seed-1"
-            }
-            """;
+        String payload = orderPayload("lst_seed_001", "buyer-seed-1");
 
         String orderBody = mockMvc.perform(post("/api/orders")
-                .with(httpBasic("buyer", "buyer123"))
+                .with(buyerAuth())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isCreated())
@@ -101,10 +70,10 @@ class OrderApiIntegrationTest {
             .getResponse()
             .getContentAsString();
 
-        String orderId = orderBody.replaceAll(".*\"orderId\":\"([^\"]+)\".*", "$1");
+        String orderId = extractStringField(orderBody, "orderId");
 
         mockMvc.perform(post("/api/orders/{orderId}/pay", orderId)
-                .with(httpBasic("controller", "controller123")))
+                .with(controllerAuth()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("PAID"));
     }
@@ -112,15 +81,10 @@ class OrderApiIntegrationTest {
     @Test
     @DisplayName("POST /api/orders/{id}/pay exige role CONTROLLER")
     void shouldRequireControllerRoleToMarkPaid() throws Exception {
-        String payload = """
-            {
-              "listingId":"lst_seed_001",
-              "buyerId":"buyer-seed-1"
-            }
-            """;
+        String payload = orderPayload("lst_seed_001", "buyer-seed-1");
 
         String orderBody = mockMvc.perform(post("/api/orders")
-                .with(httpBasic("buyer", "buyer123"))
+                .with(buyerAuth())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isCreated())
@@ -128,26 +92,21 @@ class OrderApiIntegrationTest {
             .getResponse()
             .getContentAsString();
 
-        String orderId = orderBody.replaceAll(".*\"orderId\":\"([^\"]+)\".*", "$1");
+        String orderId = extractStringField(orderBody, "orderId");
 
-        mockMvc.perform(post("/api/orders/{orderId}/pay", orderId)
-                .with(httpBasic("buyer", "buyer123")))
-            .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.code").value("AUTH-003"));
+        assertErrorCode(mockMvc.perform(post("/api/orders/{orderId}/pay", orderId)
+                .with(buyerAuth())),
+            403,
+            "AUTH-003");
     }
 
     @Test
     @DisplayName("POST /api/orders/{id}/pay refuse un paiement deja confirme")
     void shouldRejectAlreadyPaidOrder() throws Exception {
-        String payload = """
-            {
-              "listingId":"lst_seed_001",
-              "buyerId":"buyer-seed-1"
-            }
-            """;
+        String payload = orderPayload("lst_seed_001", "buyer-seed-1");
 
         String orderBody = mockMvc.perform(post("/api/orders")
-                .with(httpBasic("buyer", "buyer123"))
+                .with(buyerAuth())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isCreated())
@@ -155,15 +114,16 @@ class OrderApiIntegrationTest {
             .getResponse()
             .getContentAsString();
 
-        String orderId = orderBody.replaceAll(".*\"orderId\":\"([^\"]+)\".*", "$1");
+        String orderId = extractStringField(orderBody, "orderId");
 
         mockMvc.perform(post("/api/orders/{orderId}/pay", orderId)
-                .with(httpBasic("controller", "controller123")))
+                .with(controllerAuth()))
             .andExpect(status().isOk());
 
-        mockMvc.perform(post("/api/orders/{orderId}/pay", orderId)
-                .with(httpBasic("controller", "controller123")))
-            .andExpect(status().isConflict())
-            .andExpect(jsonPath("$.code").value("ORD-002"));
+        assertErrorCode(mockMvc.perform(post("/api/orders/{orderId}/pay", orderId)
+                .with(controllerAuth()))
+            ,
+            409,
+            "ORD-002");
     }
 }

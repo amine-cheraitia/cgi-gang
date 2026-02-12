@@ -333,6 +333,14 @@ mvn -Pmutation -pl marketplace-application org.pitest:pitest-maven:mutationCover
 mvn -Pmutation -pl marketplace-infrastructure org.pitest:pitest-maven:mutationCoverage
 ```
 
+### 5) Pipeline CI mutation
+
+Workflow dedie: `.github/workflows/mutation.yml`
+
+- declenchement manuel (`workflow_dispatch`)
+- declenchement sur Pull Request
+- publication des rapports PIT en artifact GitHub Actions (`pit-reports`)
+
 ## Swagger / OpenAPI
 
 - UI: `http://localhost:8080/swagger-ui/index.html`

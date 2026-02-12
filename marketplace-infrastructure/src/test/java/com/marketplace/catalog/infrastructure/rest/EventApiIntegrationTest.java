@@ -1,24 +1,15 @@
 package com.marketplace.catalog.infrastructure.rest;
 
+import com.marketplace.testutil.IntegrationTestBase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 
+import static com.marketplace.testutil.ApiTestAssertions.assertErrorCode;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-class EventApiIntegrationTest {
-
-    @Autowired
-    private MockMvc mockMvc;
+class EventApiIntegrationTest extends IntegrationTestBase {
 
     @Test
     @DisplayName("GET /api/events/search retourne les events mockes")
@@ -41,16 +32,16 @@ class EventApiIntegrationTest {
     @Test
     @DisplayName("GET /api/events/search retourne CAT-002 si provider indisponible")
     void shouldReturnCatalogProviderUnavailableOnSearch() throws Exception {
-        mockMvc.perform(get("/api/events/search").param("query", "__FAIL__"))
-            .andExpect(status().isServiceUnavailable())
-            .andExpect(jsonPath("$.code").value("CAT-002"));
+        assertErrorCode(mockMvc.perform(get("/api/events/search").param("query", "__FAIL__")),
+            503,
+            "CAT-002");
     }
 
     @Test
     @DisplayName("GET /api/events/{id} retourne CAT-002 si provider indisponible")
     void shouldReturnCatalogProviderUnavailableOnGetById() throws Exception {
-        mockMvc.perform(get("/api/events/__FAIL__"))
-            .andExpect(status().isServiceUnavailable())
-            .andExpect(jsonPath("$.code").value("CAT-002"));
+        assertErrorCode(mockMvc.perform(get("/api/events/__FAIL__")),
+            503,
+            "CAT-002");
     }
 }

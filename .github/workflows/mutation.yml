@@ -1,0 +1,41 @@
+name: Mutation Tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  mutation-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Install reactor artifacts (skip tests/jacoco)
+        run: mvn -B -DskipTests -Djacoco.skip=true install
+
+      - name: PIT - domain
+        run: mvn -B -Pmutation -pl marketplace-domain org.pitest:pitest-maven:mutationCoverage
+
+      - name: PIT - application
+        run: mvn -B -Pmutation -pl marketplace-application org.pitest:pitest-maven:mutationCoverage
+
+      - name: PIT - infrastructure
+        run: mvn -B -Pmutation -pl marketplace-infrastructure org.pitest:pitest-maven:mutationCoverage
+
+      - name: Upload PIT reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: pit-reports
+          path: |
+            marketplace-domain/target/pit-reports/**
+            marketplace-application/target/pit-reports/**
+            marketplace-infrastructure/target/pit-reports/**
