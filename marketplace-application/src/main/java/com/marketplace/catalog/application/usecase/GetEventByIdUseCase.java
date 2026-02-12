@@ -15,7 +15,13 @@ public class GetEventByIdUseCase {
     }
 
     public ExternalEvent execute(String eventId) {
-        return catalogProvider.getEventById(eventId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.EVENT_NOT_FOUND));
+        try {
+            return catalogProvider.getEventById(eventId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.EVENT_NOT_FOUND));
+        } catch (BusinessException ex) {
+            throw ex;
+        } catch (RuntimeException ex) {
+            throw new BusinessException(ErrorCode.CATALOG_PROVIDER_UNAVAILABLE);
+        }
     }
 }

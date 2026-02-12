@@ -256,6 +256,8 @@ flowchart LR
 
 - `GET /api/events/search`
 - `GET /api/events/{id}`
+
+Cas anormal couvert: indisponibilite provider catalogue -> `CAT-002`.
 - `POST /api/listings`
 - `POST /api/listings/{listingId}/attachments`
 - `POST /api/listings/{listingId}/attachments/presign`

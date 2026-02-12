@@ -37,4 +37,20 @@ class EventApiIntegrationTest {
             .andExpect(jsonPath("$.id").value("evt_psg_om"))
             .andExpect(jsonPath("$.venue").value("Parc des Princes"));
     }
+
+    @Test
+    @DisplayName("GET /api/events/search retourne CAT-002 si provider indisponible")
+    void shouldReturnCatalogProviderUnavailableOnSearch() throws Exception {
+        mockMvc.perform(get("/api/events/search").param("query", "__FAIL__"))
+            .andExpect(status().isServiceUnavailable())
+            .andExpect(jsonPath("$.code").value("CAT-002"));
+    }
+
+    @Test
+    @DisplayName("GET /api/events/{id} retourne CAT-002 si provider indisponible")
+    void shouldReturnCatalogProviderUnavailableOnGetById() throws Exception {
+        mockMvc.perform(get("/api/events/__FAIL__"))
+            .andExpect(status().isServiceUnavailable())
+            .andExpect(jsonPath("$.code").value("CAT-002"));
+    }
 }

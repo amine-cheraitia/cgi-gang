@@ -20,6 +20,9 @@ public class MockCatalogProvider implements CatalogProvider {
 
     @Override
     public List<ExternalEvent> searchEvents(String query) {
+        if ("__FAIL__".equalsIgnoreCase(query)) {
+            throw new IllegalStateException("Mock catalog provider unavailable");
+        }
         if (query == null || query.isBlank()) {
             return events;
         }
@@ -33,6 +36,9 @@ public class MockCatalogProvider implements CatalogProvider {
 
     @Override
     public Optional<ExternalEvent> getEventById(String eventId) {
+        if ("__FAIL__".equalsIgnoreCase(eventId)) {
+            throw new IllegalStateException("Mock catalog provider unavailable");
+        }
         return events.stream().filter(e -> e.id().equals(eventId)).findFirst();
     }
 }
