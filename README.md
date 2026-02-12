@@ -33,7 +33,7 @@ API REST modulaire pour revente de billets avec clean architecture, DDD, royalti
 | Tests normaux/anormaux/limites | `*IntegrationTest`, `MarkOrderPaidUseCaseTest`, tests templates | cas nominal, erreurs metier, securite, etat limite (already paid, duplicate waitlist) |
 | Integration externe mail (Brevo) + mode test | `BrevoEmailSender`, `FakeEmailSender` | Brevo hors `dev/test`, fake activable via profils pour TI |
 | Evolution stockage local->S3 | `ObjectStorage`, `LocalObjectStorageAdapter`, `S3ObjectStorageAdapter` | upload reel S3 (`putObject`) + URL signee (presigner), bascule par `storage.provider` |
-| Piece justificative listing (stockage abstrait) | `UploadListingAttachmentUseCase`, `ObjectStorage`, `ListingController` | upload multipart seller vers local/S3 sans changer le domaine |
+| Piece justificative listing (stockage abstrait) | `UploadListingAttachmentUseCase`, `GenerateListingAttachmentUploadUrlUseCase`, `ObjectStorage`, `ListingController` | upload multipart + presigned URL S3 sans changer le domaine |
 
 ## EDD / Event Storming (DDD)
 
@@ -154,7 +154,7 @@ classDiagram
 | Bounded context | Prefixe | Exemples |
 |---|---|---|
 | Catalog | `CAT` | `CAT-001 EVENT_NOT_FOUND`, `CAT-002 CATALOG_PROVIDER_UNAVAILABLE` |
-| Listing | `LST` | `LST-001 LISTING_NOT_FOUND`, `LST-002 LISTING_NOT_CERTIFIED`, `LST-003 LISTING_INVALID_STATE`, `LST-004 LISTING_SELLER_MISMATCH` |
+| Listing | `LST` | `LST-001 LISTING_NOT_FOUND`, `LST-002 LISTING_NOT_CERTIFIED`, `LST-003 LISTING_INVALID_STATE`, `LST-004 LISTING_SELLER_MISMATCH`, `LST-005 LISTING_ATTACHMENT_PRESIGN_UNAVAILABLE` |
 | Order | `ORD` | `ORD-001 ORDER_NOT_FOUND`, `ORD-002 ORDER_ALREADY_PAID`, `ORD-003 ORDER_INVALID_STATE` |
 | Payment | `PAY` | `PAY-001 PAYMENT_PROVIDER_ERROR`, `PAY-002 PAYMENT_WEBHOOK_INVALID` |
 | Waitlist | `WAI` | `WAI-001 WAITLIST_SUBSCRIPTION_NOT_FOUND`, `WAI-002 WAITLIST_ALREADY_SUBSCRIBED` |
@@ -258,6 +258,7 @@ flowchart LR
 - `GET /api/events/{id}`
 - `POST /api/listings`
 - `POST /api/listings/{listingId}/attachments`
+- `POST /api/listings/{listingId}/attachments/presign`
 - `GET /api/listings`
 - `POST /api/certification/{listingId}/certify`
 - `POST /api/orders`

@@ -14,6 +14,7 @@ public enum ErrorCode {
     LISTING_NOT_CERTIFIED("LST-002", 409, "Listing non certifie"),
     LISTING_INVALID_STATE("LST-003", 409, "Etat de listing invalide"),
     LISTING_SELLER_MISMATCH("LST-004", 403, "Seller non autorise pour ce listing"),
+    LISTING_ATTACHMENT_PRESIGN_UNAVAILABLE("LST-005", 503, "Presigned upload indisponible pour le provider courant"),
     ORDER_NOT_FOUND("ORD-001", 404, "Commande introuvable"),
     ORDER_ALREADY_PAID("ORD-002", 409, "Commande deja payee"),
     ORDER_INVALID_STATE("ORD-003", 409, "Etat de commande invalide"),

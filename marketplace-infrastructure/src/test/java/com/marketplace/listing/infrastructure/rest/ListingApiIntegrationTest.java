@@ -124,6 +124,19 @@ class ListingApiIntegrationTest {
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.key").exists())
             .andExpect(jsonPath("$.url").exists());
+
+        String response = mockMvc.perform(multipart("/api/listings/{listingId}/attachments", listingId)
+                .file(file)
+                .param("sellerId", "seller-seed-1")
+                .with(httpBasic("seller", "seller123")))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+        String key = response.replaceAll(".*\"key\":\"([^\"]+)\".*", "$1");
+
+        mockMvc.perform(get("/files/{key}", key))
+            .andExpect(status().isOk());
     }
 
     @Test
@@ -156,5 +169,43 @@ class ListingApiIntegrationTest {
                 .with(httpBasic("seller", "seller123")))
             .andExpect(status().isForbidden())
             .andExpect(jsonPath("$.code").value("LST-004"));
+    }
+
+    @Test
+    @DisplayName("POST /api/listings/{id}/attachments/presign retourne LST-005 en provider local")
+    void shouldReturnPresignUnavailableOnLocalProvider() throws Exception {
+        String payload = """
+            {
+              "eventId":"evt_presign_local",
+              "sellerId":"seller-seed-1",
+              "price":88.00,
+              "currency":"EUR"
+            }
+            """;
+
+        String body = mockMvc.perform(post("/api/listings")
+                .with(httpBasic("seller", "seller123"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+        String listingId = body.replaceAll(".*\"id\":\"([^\"]+)\".*", "$1");
+        String presignPayload = """
+            {
+              "sellerId":"seller-seed-1",
+              "filename":"proof.pdf",
+              "contentType":"application/pdf"
+            }
+            """;
+
+        mockMvc.perform(post("/api/listings/{listingId}/attachments/presign", listingId)
+                .with(httpBasic("seller", "seller123"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(presignPayload))
+            .andExpect(status().isServiceUnavailable())
+            .andExpect(jsonPath("$.code").value("LST-005"));
     }
 }

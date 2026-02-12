@@ -9,6 +9,7 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 import java.time.Duration;
 import java.net.URI;
@@ -52,5 +53,21 @@ public class S3ObjectStorageAdapter implements ObjectStorage {
             .getObjectRequest(objectRequest)
             .build();
         return URI.create(s3Presigner.presignGetObject(presignRequest).url().toString());
+    }
+
+    @Override
+    public PresignedUpload presignUpload(String key, String contentType, long expiresInSeconds) {
+        String bucket = properties.getS3().getBucket();
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+            .bucket(bucket)
+            .key(key)
+            .contentType(contentType)
+            .build();
+        PutObjectPresignRequest request = PutObjectPresignRequest.builder()
+            .signatureDuration(Duration.ofSeconds(expiresInSeconds))
+            .putObjectRequest(putObjectRequest)
+            .build();
+        URI uploadUrl = URI.create(s3Presigner.presignPutObject(request).url().toString());
+        return new PresignedUpload(key, uploadUrl, "PUT", expiresInSeconds);
     }
 }

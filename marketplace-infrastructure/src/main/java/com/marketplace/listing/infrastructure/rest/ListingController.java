@@ -1,9 +1,12 @@
 package com.marketplace.listing.infrastructure.rest;
 
 import com.marketplace.listing.application.usecase.CreateListingUseCase;
+import com.marketplace.listing.application.usecase.GenerateListingAttachmentUploadUrlUseCase;
 import com.marketplace.listing.application.usecase.ListPublicListingsUseCase;
 import com.marketplace.listing.application.usecase.UploadListingAttachmentUseCase;
+import com.marketplace.listing.infrastructure.rest.dto.AttachmentUploadUrlResponse;
 import com.marketplace.listing.infrastructure.rest.dto.CreateListingRequest;
+import com.marketplace.listing.infrastructure.rest.dto.GenerateAttachmentUploadUrlRequest;
 import com.marketplace.listing.infrastructure.rest.dto.ListingAttachmentResponse;
 import com.marketplace.listing.infrastructure.rest.dto.ListingResponse;
 import jakarta.validation.Valid;
@@ -28,13 +31,16 @@ public class ListingController {
     private final CreateListingUseCase createListingUseCase;
     private final ListPublicListingsUseCase listPublicListingsUseCase;
     private final UploadListingAttachmentUseCase uploadListingAttachmentUseCase;
+    private final GenerateListingAttachmentUploadUrlUseCase generateListingAttachmentUploadUrlUseCase;
 
     public ListingController(CreateListingUseCase createListingUseCase,
                              ListPublicListingsUseCase listPublicListingsUseCase,
-                             UploadListingAttachmentUseCase uploadListingAttachmentUseCase) {
+                             UploadListingAttachmentUseCase uploadListingAttachmentUseCase,
+                             GenerateListingAttachmentUploadUrlUseCase generateListingAttachmentUploadUrlUseCase) {
         this.createListingUseCase = createListingUseCase;
         this.listPublicListingsUseCase = listPublicListingsUseCase;
         this.uploadListingAttachmentUseCase = uploadListingAttachmentUseCase;
+        this.generateListingAttachmentUploadUrlUseCase = generateListingAttachmentUploadUrlUseCase;
     }
 
     @PostMapping
@@ -64,6 +70,17 @@ public class ListingController {
             file.getOriginalFilename(),
             file.getContentType(),
             file.getBytes()
+        ));
+    }
+
+    @PostMapping("/{listingId}/attachments/presign")
+    public AttachmentUploadUrlResponse presignAttachmentUpload(@PathVariable String listingId,
+                                                               @Valid @RequestBody GenerateAttachmentUploadUrlRequest request) {
+        return AttachmentUploadUrlResponse.from(generateListingAttachmentUploadUrlUseCase.execute(
+            listingId,
+            request.sellerId(),
+            request.filename(),
+            request.contentType()
         ));
     }
 }

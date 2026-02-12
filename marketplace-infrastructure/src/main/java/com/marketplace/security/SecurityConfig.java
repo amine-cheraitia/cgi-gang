@@ -31,6 +31,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.GET, "/api/listings").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/events/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/files/**").permitAll()
                 .requestMatchers("/api/listings/**").hasRole("SELLER")
                 .requestMatchers(HttpMethod.POST, "/api/listings").hasRole("SELLER")
                 .requestMatchers("/api/certification/**").hasRole("CONTROLLER")
