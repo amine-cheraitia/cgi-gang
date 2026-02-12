@@ -16,9 +16,9 @@ public class FakeEmailSender implements EmailSender {
     private final List<EmailRecord> sentEmails = new CopyOnWriteArrayList<>();
 
     @Override
-    public void sendEmail(String to, String subject, String body) {
-        sentEmails.add(new EmailRecord(to, subject, body));
-        log.info("Fake email sent to={}, subject={}, body={}", to, subject, body);
+    public void sendEmail(String to, String subject, String textBody, String htmlBody) {
+        sentEmails.add(new EmailRecord(to, subject, textBody, htmlBody));
+        log.info("Fake email sent to={}, subject={}, textBody={}", to, subject, textBody);
     }
 
     public List<EmailRecord> sentEmails() {
@@ -29,6 +29,9 @@ public class FakeEmailSender implements EmailSender {
         sentEmails.clear();
     }
 
-    public record EmailRecord(String to, String subject, String body) {
+    public record EmailRecord(String to, String subject, String textBody, String htmlBody) {
+        public String body() {
+            return textBody;
+        }
     }
 }

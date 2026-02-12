@@ -34,6 +34,37 @@ API REST modulaire pour revente de billets avec clean architecture, DDD, royalti
 | Integration externe mail (Brevo) + mode test | `BrevoEmailSender`, `FakeEmailSender` | Brevo hors `dev/test`, fake activable via profils pour TI |
 | Evolution stockage local->S3 | `ObjectStorage`, `LocalObjectStorageAdapter`, `S3ObjectStorageAdapter` | upload reel S3 (`putObject`) + URL signee (presigner), bascule par `storage.provider` |
 
+## EDD / Event Storming (DDD)
+
+### Bounded Contexts
+
+- `CATALOG`: recherche et recuperation d'evenements externes
+- `LISTING`: publication et certification des billets
+- `SALES`: cycle de vie de la commande et paiement
+- `WAITLIST`: inscriptions des acheteurs en attente par evenement
+- `NOTIFICATION`: composition et envoi des emails
+
+### Commands -> Events -> Policies
+
+| Commande | Evenement metier | Policy / Reaction |
+|---|---|---|
+| `CreateListing` | `ListingCreated` (etat aggregate) | attente certification |
+| `CertifyListing` | `ListingCertifiedApplicationEvent` | email vendeur + publication marketplace |
+| `CertifyListing` avec waitlist abonnee | `WaitlistTicketsAvailableApplicationEvent` | email waitlist `WAITLIST_TICKETS_AVAILABLE` |
+| `PlaceOrder` | `OrderPlacedApplicationEvent` | email acheteur `ORDER_PLACED` |
+| `PaymentWebhook(status=PAID)` | `OrderPaidApplicationEvent` | passage commande a `PAID` + email vendeur `ORDER_PAID` |
+
+### Contrat templates email (HTML + texte)
+
+| Template | Payload attendu (`data`) | Sujet |
+|---|---|---|
+| `LISTING_CERTIFIED` | `eventName`, `listingId` | `Votre billet est certifie` |
+| `ORDER_PLACED` | `orderId`, `buyerTotal` | `Commande creee` |
+| `ORDER_PAID` | `orderId`, `sellerPayout`, `platformRevenue` | `Paiement confirme` |
+| `WAITLIST_TICKETS_AVAILABLE` | `eventName`, `startingPrice` | `Billets disponibles` |
+
+Regle de validation stricte: tout payload incomplet retourne `NTF-001`.
+
 ## Diagramme de classes - Observer applicatif (Notification)
 
 ```mermaid
@@ -126,6 +157,7 @@ classDiagram
 | Order | `ORD` | `ORD-001 ORDER_NOT_FOUND`, `ORD-002 ORDER_ALREADY_PAID`, `ORD-003 ORDER_INVALID_STATE` |
 | Payment | `PAY` | `PAY-001 PAYMENT_PROVIDER_ERROR`, `PAY-002 PAYMENT_WEBHOOK_INVALID` |
 | Waitlist | `WAI` | `WAI-001 WAITLIST_SUBSCRIPTION_NOT_FOUND`, `WAI-002 WAITLIST_ALREADY_SUBSCRIBED` |
+| Notification | `NTF` | `NTF-001 NOTIFICATION_TEMPLATE_PAYLOAD_INVALID` |
 
 ## Diagramme de classes - Contrat d'erreurs API
 
@@ -229,6 +261,7 @@ flowchart LR
 - `POST /api/orders`
 - `GET /api/orders/{orderId}`
 - `POST /api/orders/{orderId}/pay`
+- `POST /api/payments/webhooks`
 - `POST /api/waitlist/subscriptions`
 
 ## Security (HTTP Basic)

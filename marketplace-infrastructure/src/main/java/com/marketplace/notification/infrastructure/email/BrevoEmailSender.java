@@ -29,7 +29,7 @@ public class BrevoEmailSender implements EmailSender {
     private String senderName;
 
     @Override
-    public void sendEmail(String to, String subject, String body) {
+    public void sendEmail(String to, String subject, String textBody, String htmlBody) {
         if (apiKey == null || apiKey.isBlank()) {
             log.info("Brevo API key absente, email non envoye. to={}, subject={}", to, subject);
             return;
@@ -40,14 +40,16 @@ public class BrevoEmailSender implements EmailSender {
               "sender": {"name": "%s", "email": "%s"},
               "to": [{"email": "%s"}],
               "subject": "%s",
-              "textContent": "%s"
+              "textContent": "%s",
+              "htmlContent": "%s"
             }
             """.formatted(
             escape(senderName),
             escape(senderEmail),
             escape(to),
             escape(subject),
-            escape(body)
+            escape(textBody),
+            escape(htmlBody)
         );
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -72,6 +74,10 @@ public class BrevoEmailSender implements EmailSender {
     }
 
     private String escape(String value) {
-        return value.replace("\"", "\\\"");
+        return value
+            .replace("\\", "\\\\")
+            .replace("\"", "\\\"")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r");
     }
 }

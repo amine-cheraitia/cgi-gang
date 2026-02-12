@@ -14,10 +14,15 @@ public class ListingCertifiedTemplateStrategy implements EmailTemplateStrategy {
 
     @Override
     public EmailMessage build(NotificationCommand command) {
+        NotificationPayloadValidator.requireAnyKey(command, "eventName", "listingId");
         String eventName = command.data().getOrDefault("eventName", "votre evenement");
         String subject = "Votre billet est certifie";
-        String body = "Bonjour " + command.recipientName() + ",\n\n"
+        String textBody = "Bonjour " + command.recipientName() + ",\n\n"
             + "Votre billet pour " + eventName + " est maintenant certifie et visible sur la marketplace.\n";
-        return new EmailMessage(subject, body);
+        String htmlBody = EmailHtmlLayout.wrap(subject,
+            "<p>Bonjour <strong>" + EmailHtmlLayout.escape(command.recipientName()) + "</strong>,</p>"
+                + "<p>Votre billet pour <strong>" + EmailHtmlLayout.escape(eventName)
+                + "</strong> est maintenant certifie et visible sur la marketplace.</p>");
+        return new EmailMessage(subject, textBody, htmlBody);
     }
 }

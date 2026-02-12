@@ -23,6 +23,9 @@ brevo:
   sender-email: noreply@marketplace.local
   sender-name: Marketplace API
 
+payment:
+  webhook-token: ${PAYMENT_WEBHOOK_TOKEN:change-me}
+
 storage:
   provider: local
   local:

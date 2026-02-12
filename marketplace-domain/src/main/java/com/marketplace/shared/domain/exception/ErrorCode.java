@@ -18,6 +18,7 @@ public enum ErrorCode {
     ORDER_INVALID_STATE("ORD-003", 409, "Etat de commande invalide"),
     EVENT_NOT_FOUND("CAT-001", 404, "Evenement introuvable"),
     CATALOG_PROVIDER_UNAVAILABLE("CAT-002", 503, "Catalogue indisponible"),
+    NOTIFICATION_TEMPLATE_PAYLOAD_INVALID("NTF-001", 400, "Payload notification invalide"),
     PAYMENT_PROVIDER_ERROR("PAY-001", 502, "Erreur du provider de paiement"),
     PAYMENT_WEBHOOK_INVALID("PAY-002", 400, "Webhook paiement invalide"),
     WAITLIST_SUBSCRIPTION_NOT_FOUND("WAI-001", 404, "Inscription waitlist introuvable"),

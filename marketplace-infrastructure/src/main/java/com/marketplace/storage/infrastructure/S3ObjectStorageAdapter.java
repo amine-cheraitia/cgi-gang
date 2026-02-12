@@ -4,14 +4,12 @@ import com.marketplace.storage.domain.port.ObjectStorage;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
-import jakarta.annotation.PreDestroy;
 import java.time.Duration;
 import java.net.URI;
 
@@ -22,11 +20,12 @@ public class S3ObjectStorageAdapter implements ObjectStorage {
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
 
-    public S3ObjectStorageAdapter(StorageProperties properties) {
+    public S3ObjectStorageAdapter(StorageProperties properties,
+                                  S3Client s3Client,
+                                  S3Presigner s3Presigner) {
         this.properties = properties;
-        Region region = Region.of(properties.getS3().getRegion());
-        this.s3Client = S3Client.builder().region(region).build();
-        this.s3Presigner = S3Presigner.builder().region(region).build();
+        this.s3Client = s3Client;
+        this.s3Presigner = s3Presigner;
     }
 
     @Override
@@ -53,11 +52,5 @@ public class S3ObjectStorageAdapter implements ObjectStorage {
             .getObjectRequest(objectRequest)
             .build();
         return URI.create(s3Presigner.presignGetObject(presignRequest).url().toString());
-    }
-
-    @PreDestroy
-    void close() {
-        s3Client.close();
-        s3Presigner.close();
     }
 }

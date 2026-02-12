@@ -14,12 +14,17 @@ public class OrderPlacedTemplateStrategy implements EmailTemplateStrategy {
 
     @Override
     public EmailMessage build(NotificationCommand command) {
+        NotificationPayloadValidator.requireKeys(command, "orderId", "buyerTotal");
         String total = command.data().getOrDefault("buyerTotal", "N/A");
         String orderId = command.data().getOrDefault("orderId", "N/A");
         String subject = "Commande creee";
-        String body = "Bonjour " + command.recipientName() + ",\n\n"
+        String textBody = "Bonjour " + command.recipientName() + ",\n\n"
             + "Votre commande " + orderId + " est creee.\n"
             + "Montant total a payer: " + total + ".\n";
-        return new EmailMessage(subject, body);
+        String htmlBody = EmailHtmlLayout.wrap(subject,
+            "<p>Bonjour <strong>" + EmailHtmlLayout.escape(command.recipientName()) + "</strong>,</p>"
+                + "<p>Votre commande <strong>" + EmailHtmlLayout.escape(orderId) + "</strong> est creee.</p>"
+                + "<p>Montant total a payer: <strong>" + EmailHtmlLayout.escape(total) + "</strong>.</p>");
+        return new EmailMessage(subject, textBody, htmlBody);
     }
 }

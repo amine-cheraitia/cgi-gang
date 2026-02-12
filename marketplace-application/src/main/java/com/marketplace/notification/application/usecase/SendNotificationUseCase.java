@@ -18,6 +18,6 @@ public class SendNotificationUseCase {
 
     public void execute(NotificationCommand command) {
         EmailMessage message = templateFactory.resolve(command.eventType()).build(command);
-        emailSender.sendEmail(command.to(), message.subject(), message.body());
+        emailSender.sendEmail(command.to(), message.subject(), message.textBody(), message.htmlBody());
     }
 }

@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/certification/**").hasRole("CONTROLLER")
                 .requestMatchers(HttpMethod.POST, "/api/orders").hasRole("BUYER")
                 .requestMatchers(HttpMethod.POST, "/api/orders/*/pay").hasRole("CONTROLLER")
+                .requestMatchers(HttpMethod.POST, "/api/payments/webhooks").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/orders/**").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/waitlist/subscriptions").hasRole("BUYER")
                 .anyRequest().authenticated()
