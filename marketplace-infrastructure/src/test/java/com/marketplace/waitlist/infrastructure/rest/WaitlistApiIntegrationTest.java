@@ -99,4 +99,14 @@ class WaitlistApiIntegrationTest {
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.code").value("WAI-001"));
     }
+
+    @Test
+    @DisplayName("DELETE /api/waitlist/subscriptions valide la presence des params")
+    void shouldValidateUnsubscribeRequestParams() throws Exception {
+        mockMvc.perform(delete("/api/waitlist/subscriptions")
+                .with(httpBasic("buyer", "buyer123"))
+                .param("eventId", "evt_waitlist_validation"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("GEN-001"));
+    }
 }

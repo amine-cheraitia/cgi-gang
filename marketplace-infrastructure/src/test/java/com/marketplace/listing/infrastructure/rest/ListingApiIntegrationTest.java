@@ -208,4 +208,41 @@ class ListingApiIntegrationTest {
             .andExpect(status().isServiceUnavailable())
             .andExpect(jsonPath("$.code").value("LST-005"));
     }
+
+    @Test
+    @DisplayName("POST /api/listings/{id}/attachments/presign valide les champs requis")
+    void shouldValidatePresignRequestPayload() throws Exception {
+        String payload = """
+            {
+              "eventId":"evt_presign_validation",
+              "sellerId":"seller-seed-1",
+              "price":88.00,
+              "currency":"EUR"
+            }
+            """;
+
+        String body = mockMvc.perform(post("/api/listings")
+                .with(httpBasic("seller", "seller123"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+        String listingId = body.replaceAll(".*\"id\":\"([^\"]+)\".*", "$1");
+        String invalidPayload = """
+            {
+              "sellerId":"seller-seed-1",
+              "filename":"proof.pdf"
+            }
+            """;
+
+        mockMvc.perform(post("/api/listings/{listingId}/attachments/presign", listingId)
+                .with(httpBasic("seller", "seller123"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(invalidPayload))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("GEN-001"));
+    }
 }

@@ -163,4 +163,21 @@ class PaymentWebhookIntegrationTest {
 
         assertThat(fakeEmailSender.sentEmails().size()).isEqualTo(emailsAfterFirstCall);
     }
+
+    @Test
+    @DisplayName("Webhook invalide sur payload retourne GEN-001")
+    void shouldReturnValidationErrorForInvalidWebhookPayload() throws Exception {
+        String webhookPayload = """
+            {
+              "orderId":"ord_x"
+            }
+            """;
+
+        mockMvc.perform(post("/api/payments/webhooks")
+                .header("X-Payment-Webhook-Token", "test-webhook-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(webhookPayload))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("GEN-001"));
+    }
 }

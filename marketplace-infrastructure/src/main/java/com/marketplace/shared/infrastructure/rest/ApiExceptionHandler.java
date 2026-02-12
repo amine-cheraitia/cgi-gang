@@ -9,8 +9,11 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
@@ -56,6 +59,21 @@ public class ApiExceptionHandler {
             .map(v -> v.getPropertyPath() + ": " + v.getMessage())
             .orElse(ErrorCode.VALIDATION_ERROR.defaultMessage());
         return buildError(ErrorCode.VALIDATION_ERROR, details);
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ErrorResponse> handleMissingRequestParameter(MissingServletRequestParameterException ex) {
+        return buildError(ErrorCode.VALIDATION_ERROR, ex.getParameterName() + ": parametre requis");
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<ErrorResponse> handleMissingRequestPart(MissingServletRequestPartException ex) {
+        return buildError(ErrorCode.VALIDATION_ERROR, ex.getRequestPartName() + ": partie requise");
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleMessageNotReadable(HttpMessageNotReadableException ex) {
+        return buildError(ErrorCode.VALIDATION_ERROR, "Corps de requete invalide");
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
