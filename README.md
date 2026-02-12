@@ -286,3 +286,8 @@ Contrat securite couvre identifiants invalides -> `AUTH-002`.
 mvn test
 ```
 
+## Swagger / OpenAPI
+
+- UI: `http://localhost:8080/swagger-ui/index.html`
+- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+

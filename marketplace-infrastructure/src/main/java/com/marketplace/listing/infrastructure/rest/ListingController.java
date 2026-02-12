@@ -9,6 +9,8 @@ import com.marketplace.listing.infrastructure.rest.dto.CreateListingRequest;
 import com.marketplace.listing.infrastructure.rest.dto.GenerateAttachmentUploadUrlRequest;
 import com.marketplace.listing.infrastructure.rest.dto.ListingAttachmentResponse;
 import com.marketplace.listing.infrastructure.rest.dto.ListingResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -27,6 +29,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/listings")
+@Tag(name = "Listings", description = "Gestion des annonces de billets")
 public class ListingController {
     private final CreateListingUseCase createListingUseCase;
     private final ListPublicListingsUseCase listPublicListingsUseCase;
@@ -45,6 +48,7 @@ public class ListingController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Creer une annonce", description = "Cree une annonce en statut PENDING_CERTIFICATION.")
     public ListingResponse create(@Valid @RequestBody CreateListingRequest request) {
         return ListingResponse.from(createListingUseCase.execute(
             request.eventId(),
@@ -55,12 +59,14 @@ public class ListingController {
     }
 
     @GetMapping
+    @Operation(summary = "Lister les annonces publiques", description = "Retourne uniquement les annonces certifiees visibles.")
     public List<ListingResponse> listPublic() {
         return listPublicListingsUseCase.execute().stream().map(ListingResponse::from).toList();
     }
 
     @PostMapping(value = "/{listingId}/attachments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Uploader une piece justificative", description = "Upload direct via API (local ou S3 selon provider).")
     public ListingAttachmentResponse uploadAttachment(@PathVariable String listingId,
                                                       @RequestParam String sellerId,
                                                       @RequestPart("file") MultipartFile file) throws java.io.IOException {
@@ -74,6 +80,7 @@ public class ListingController {
     }
 
     @PostMapping("/{listingId}/attachments/presign")
+    @Operation(summary = "Generer une URL d'upload presignee", description = "Retourne une URL PUT presignee quand le provider le supporte (S3).")
     public AttachmentUploadUrlResponse presignAttachmentUpload(@PathVariable String listingId,
                                                                @Valid @RequestBody GenerateAttachmentUploadUrlRequest request) {
         return AttachmentUploadUrlResponse.from(generateListingAttachmentUploadUrlUseCase.execute(
