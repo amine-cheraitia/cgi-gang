@@ -2,6 +2,7 @@ package com.marketplace.catalog.infrastructure.provider;
 
 import com.marketplace.catalog.domain.model.ExternalEvent;
 import com.marketplace.catalog.domain.port.CatalogProvider;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -10,6 +11,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 @Component
+@ConditionalOnProperty(name = "catalog.provider", havingValue = "mock", matchIfMissing = true)
 public class MockCatalogProvider implements CatalogProvider {
     private final List<ExternalEvent> events = List.of(
         new ExternalEvent("evt_taylor_paris", "Taylor Swift - The Eras Tour", Instant.parse("2026-06-15T20:00:00Z"), "Stade de France", "Paris"),
