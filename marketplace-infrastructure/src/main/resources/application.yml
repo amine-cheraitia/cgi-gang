@@ -2,6 +2,9 @@ server:
   port: 8080
 
 spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
   datasource:
     url: jdbc:h2:mem:marketplace;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
     username: sa
@@ -17,9 +20,6 @@ spring:
   h2:
     console:
       enabled: true
-  mvc:
-    pathmatch:
-      matching-strategy: ant_path_matcher
 
 brevo:
   api-key: ${BREVO_API_KEY:}
@@ -44,6 +44,7 @@ springdoc:
     enabled: true
   swagger-ui:
     enabled: true
+    url: /v3/api-docs
 
 ---
 spring:

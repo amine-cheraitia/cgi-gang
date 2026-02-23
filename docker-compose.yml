@@ -5,8 +5,9 @@ services:
       dockerfile: Dockerfile
     container_name: marketplace-api
     ports:
-      - "8080:8080"
+      - "8082:8080"
     environment:
+      SPRING_MVC_PATHMATCH_MATCHING_STRATEGY: ant_path_matcher
       BREVO_API_KEY: ${BREVO_API_KEY:-}
       STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local}
       STORAGE_S3_BUCKET: ${STORAGE_S3_BUCKET:-}

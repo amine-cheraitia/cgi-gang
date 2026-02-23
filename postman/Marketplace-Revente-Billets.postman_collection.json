@@ -16,38 +16,20 @@
             "auth": {
               "type": "basic",
               "basic": [
-                {
-                  "key": "username",
-                  "value": "{{sellerUsername}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{sellerPassword}}",
-                  "type": "string"
-                }
+                { "key": "username", "value": "{{sellerUsername}}", "type": "string" },
+                { "key": "password", "value": "{{sellerPassword}}", "type": "string" }
               ]
             },
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"eventId\": \"{{eventId}}\",\n  \"sellerId\": \"{{sellerId}}\",\n  \"price\": 89.00,\n  \"currency\": \"EUR\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/listings",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "listings"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "listings"]
             }
           },
           "event": [
@@ -71,31 +53,16 @@
             "auth": {
               "type": "basic",
               "basic": [
-                {
-                  "key": "username",
-                  "value": "{{controllerUsername}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{controllerPassword}}",
-                  "type": "string"
-                }
+                { "key": "username", "value": "{{controllerUsername}}", "type": "string" },
+                { "key": "password", "value": "{{controllerPassword}}", "type": "string" }
               ]
             },
             "method": "POST",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/certification/{{listingId}}/certify",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "certification",
-                "{{listingId}}",
-                "certify"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "certification", "{{listingId}}", "certify"]
             }
           },
           "event": [
@@ -118,38 +85,20 @@
             "auth": {
               "type": "basic",
               "basic": [
-                {
-                  "key": "username",
-                  "value": "{{buyerUsername}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{buyerPassword}}",
-                  "type": "string"
-                }
+                { "key": "username", "value": "{{buyerUsername}}", "type": "string" },
+                { "key": "password", "value": "{{buyerPassword}}", "type": "string" }
               ]
             },
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"listingId\": \"{{listingId}}\",\n  \"buyerId\": \"{{buyerId}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/orders",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "orders"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders"]
             }
           },
           "event": [
@@ -173,30 +122,16 @@
             "auth": {
               "type": "basic",
               "basic": [
-                {
-                  "key": "username",
-                  "value": "{{buyerUsername}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{buyerPassword}}",
-                  "type": "string"
-                }
+                { "key": "username", "value": "{{buyerUsername}}", "type": "string" },
+                { "key": "password", "value": "{{buyerPassword}}", "type": "string" }
               ]
             },
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/orders/{{orderId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "orders",
-                "{{orderId}}"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "{{orderId}}"]
             }
           },
           "event": [
@@ -219,31 +154,16 @@
             "auth": {
               "type": "basic",
               "basic": [
-                {
-                  "key": "username",
-                  "value": "{{controllerUsername}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{controllerPassword}}",
-                  "type": "string"
-                }
+                { "key": "username", "value": "{{controllerUsername}}", "type": "string" },
+                { "key": "password", "value": "{{controllerPassword}}", "type": "string" }
               ]
             },
             "method": "POST",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/orders/{{orderId}}/pay",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "orders",
-                "{{orderId}}",
-                "pay"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "{{orderId}}", "pay"]
             }
           },
           "event": [
@@ -265,14 +185,8 @@
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "X-Payment-Webhook-Token",
-                "value": "{{paymentWebhookToken}}"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Payment-Webhook-Token", "value": "{{paymentWebhookToken}}" }
             ],
             "body": {
               "mode": "raw",
@@ -280,14 +194,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/payments/webhooks",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "payments",
-                "webhooks"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "payments", "webhooks"]
             }
           },
           "event": [
@@ -307,22 +215,17 @@
       ]
     },
     {
-      "name": "00 - Health docs",
+      "name": "00 - Dev & Docs",
       "item": [
         {
-          "name": "Swagger UI",
+          "name": "Seeds (users + listings)",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/swagger-ui/index.html",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "swagger-ui",
-                "index.html"
-              ]
+              "raw": "{{baseUrl}}/dev/seeds",
+              "host": ["{{baseUrl}}"],
+              "path": ["dev", "seeds"]
             }
           }
         },
@@ -333,13 +236,20 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/v3/api-docs",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "v3",
-                "api-docs"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["v3", "api-docs"]
+            }
+          }
+        },
+        {
+          "name": "H2 Console (navigateur)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/h2-console",
+              "host": ["{{baseUrl}}"],
+              "path": ["h2-console"]
             }
           }
         }
@@ -355,20 +265,9 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/events/search?query=Taylor",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "events",
-                "search"
-              ],
-              "query": [
-                {
-                  "key": "query",
-                  "value": "Taylor"
-                }
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "events", "search"],
+              "query": [{ "key": "query", "value": "Taylor" }]
             }
           }
         },
@@ -379,14 +278,8 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/events/{{eventId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "events",
-                "{{eventId}}"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "events", "{{eventId}}"]
             }
           }
         }
@@ -402,13 +295,8 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/listings",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "listings"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "listings"]
             }
           }
         },
@@ -418,38 +306,20 @@
             "auth": {
               "type": "basic",
               "basic": [
-                {
-                  "key": "username",
-                  "value": "{{sellerUsername}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{sellerPassword}}",
-                  "type": "string"
-                }
+                { "key": "username", "value": "{{sellerUsername}}", "type": "string" },
+                { "key": "password", "value": "{{sellerPassword}}", "type": "string" }
               ]
             },
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"eventId\": \"{{eventId}}\",\n  \"sellerId\": \"{{sellerId}}\",\n  \"price\": 85.00,\n  \"currency\": \"EUR\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/listings",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "listings"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "listings"]
             }
           },
           "event": [
@@ -460,9 +330,7 @@
                 "exec": [
                   "if (pm.response.code === 201) {",
                   "  var json = pm.response.json();",
-                  "  if (json.id) {",
-                  "    pm.collectionVariables.set('listingId', json.id);",
-                  "  }",
+                  "  if (json.id) { pm.collectionVariables.set('listingId', json.id); }",
                   "}"
                 ]
               }
@@ -475,31 +343,16 @@
             "auth": {
               "type": "basic",
               "basic": [
-                {
-                  "key": "username",
-                  "value": "{{controllerUsername}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{controllerPassword}}",
-                  "type": "string"
-                }
+                { "key": "username", "value": "{{controllerUsername}}", "type": "string" },
+                { "key": "password", "value": "{{controllerPassword}}", "type": "string" }
               ]
             },
             "method": "POST",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/certification/{{listingId}}/certify",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "certification",
-                "{{listingId}}",
-                "certify"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "certification", "{{listingId}}", "certify"]
             }
           }
         },
@@ -509,16 +362,8 @@
             "auth": {
               "type": "basic",
               "basic": [
-                {
-                  "key": "username",
-                  "value": "{{sellerUsername}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{sellerPassword}}",
-                  "type": "string"
-                }
+                { "key": "username", "value": "{{sellerUsername}}", "type": "string" },
+                { "key": "password", "value": "{{sellerPassword}}", "type": "string" }
               ]
             },
             "method": "POST",
@@ -526,29 +371,14 @@
             "body": {
               "mode": "formdata",
               "formdata": [
-                {
-                  "key": "sellerId",
-                  "value": "{{sellerId}}",
-                  "type": "text"
-                },
-                {
-                  "key": "file",
-                  "type": "file",
-                  "src": ""
-                }
+                { "key": "sellerId", "value": "{{sellerId}}", "type": "text" },
+                { "key": "file", "type": "file", "src": "" }
               ]
             },
             "url": {
               "raw": "{{baseUrl}}/api/listings/{{listingId}}/attachments",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "listings",
-                "{{listingId}}",
-                "attachments"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "listings", "{{listingId}}", "attachments"]
             }
           }
         },
@@ -558,41 +388,20 @@
             "auth": {
               "type": "basic",
               "basic": [
-                {
-                  "key": "username",
-                  "value": "{{sellerUsername}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{sellerPassword}}",
-                  "type": "string"
-                }
+                { "key": "username", "value": "{{sellerUsername}}", "type": "string" },
+                { "key": "password", "value": "{{sellerPassword}}", "type": "string" }
               ]
             },
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"sellerId\": \"{{sellerId}}\",\n  \"filename\": \"proof.pdf\",\n  \"contentType\": \"application/pdf\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/listings/{{listingId}}/attachments/presign",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "listings",
-                "{{listingId}}",
-                "attachments",
-                "presign"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "listings", "{{listingId}}", "attachments", "presign"]
             }
           }
         }
@@ -607,38 +416,20 @@
             "auth": {
               "type": "basic",
               "basic": [
-                {
-                  "key": "username",
-                  "value": "{{buyerUsername}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{buyerPassword}}",
-                  "type": "string"
-                }
+                { "key": "username", "value": "{{buyerUsername}}", "type": "string" },
+                { "key": "password", "value": "{{buyerPassword}}", "type": "string" }
               ]
             },
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"listingId\": \"{{listingId}}\",\n  \"buyerId\": \"{{buyerId}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/orders",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "orders"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders"]
             }
           },
           "event": [
@@ -649,9 +440,7 @@
                 "exec": [
                   "if (pm.response.code === 201) {",
                   "  var json = pm.response.json();",
-                  "  if (json.orderId) {",
-                  "    pm.collectionVariables.set('orderId', json.orderId);",
-                  "  }",
+                  "  if (json.orderId) { pm.collectionVariables.set('orderId', json.orderId); }",
                   "}"
                 ]
               }
@@ -664,30 +453,16 @@
             "auth": {
               "type": "basic",
               "basic": [
-                {
-                  "key": "username",
-                  "value": "{{buyerUsername}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{buyerPassword}}",
-                  "type": "string"
-                }
+                { "key": "username", "value": "{{buyerUsername}}", "type": "string" },
+                { "key": "password", "value": "{{buyerPassword}}", "type": "string" }
               ]
             },
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/orders/{{orderId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "orders",
-                "{{orderId}}"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "{{orderId}}"]
             }
           }
         },
@@ -697,31 +472,16 @@
             "auth": {
               "type": "basic",
               "basic": [
-                {
-                  "key": "username",
-                  "value": "{{controllerUsername}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{controllerPassword}}",
-                  "type": "string"
-                }
+                { "key": "username", "value": "{{controllerUsername}}", "type": "string" },
+                { "key": "password", "value": "{{controllerPassword}}", "type": "string" }
               ]
             },
             "method": "POST",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/orders/{{orderId}}/pay",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "orders",
-                "{{orderId}}",
-                "pay"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "{{orderId}}", "pay"]
             }
           }
         }
@@ -736,39 +496,20 @@
             "auth": {
               "type": "basic",
               "basic": [
-                {
-                  "key": "username",
-                  "value": "{{buyerUsername}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{buyerPassword}}",
-                  "type": "string"
-                }
+                { "key": "username", "value": "{{buyerUsername}}", "type": "string" },
+                { "key": "password", "value": "{{buyerPassword}}", "type": "string" }
               ]
             },
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"eventId\": \"{{eventId}}\",\n  \"userId\": \"{{buyerId}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/waitlist/subscriptions",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "waitlist",
-                "subscriptions"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "waitlist", "subscriptions"]
             }
           }
         },
@@ -778,39 +519,19 @@
             "auth": {
               "type": "basic",
               "basic": [
-                {
-                  "key": "username",
-                  "value": "{{buyerUsername}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{buyerPassword}}",
-                  "type": "string"
-                }
+                { "key": "username", "value": "{{buyerUsername}}", "type": "string" },
+                { "key": "password", "value": "{{buyerPassword}}", "type": "string" }
               ]
             },
             "method": "DELETE",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/waitlist/subscriptions?eventId={{eventId}}&userId={{buyerId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "waitlist",
-                "subscriptions"
-              ],
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "waitlist", "subscriptions"],
               "query": [
-                {
-                  "key": "eventId",
-                  "value": "{{eventId}}"
-                },
-                {
-                  "key": "userId",
-                  "value": "{{buyerId}}"
-                }
+                { "key": "eventId", "value": "{{eventId}}" },
+                { "key": "userId", "value": "{{buyerId}}" }
               ]
             }
           }
@@ -825,14 +546,8 @@
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "X-Payment-Webhook-Token",
-                "value": "{{paymentWebhookToken}}"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Payment-Webhook-Token", "value": "{{paymentWebhookToken}}" }
             ],
             "body": {
               "mode": "raw",
@@ -840,14 +555,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/payments/webhooks",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "payments",
-                "webhooks"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "payments", "webhooks"]
             }
           }
         }
@@ -855,57 +564,18 @@
     }
   ],
   "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:8080"
-    },
-    {
-      "key": "eventId",
-      "value": "evt_psg_om"
-    },
-    {
-      "key": "sellerId",
-      "value": "seller-seed-1"
-    },
-    {
-      "key": "buyerId",
-      "value": "buyer-seed-1"
-    },
-    {
-      "key": "listingId",
-      "value": "lst_seed_001"
-    },
-    {
-      "key": "orderId",
-      "value": "ord_seed_001"
-    },
-    {
-      "key": "sellerUsername",
-      "value": "seller"
-    },
-    {
-      "key": "sellerPassword",
-      "value": "seller123"
-    },
-    {
-      "key": "buyerUsername",
-      "value": "buyer"
-    },
-    {
-      "key": "buyerPassword",
-      "value": "buyer123"
-    },
-    {
-      "key": "controllerUsername",
-      "value": "controller"
-    },
-    {
-      "key": "controllerPassword",
-      "value": "controller123"
-    },
-    {
-      "key": "paymentWebhookToken",
-      "value": "change-me"
-    }
+    { "key": "baseUrl",           "value": "http://localhost:8082" },
+    { "key": "eventId",           "value": "evt_taylor_paris" },
+    { "key": "sellerId",          "value": "seller-seed-1" },
+    { "key": "buyerId",           "value": "buyer-seed-1" },
+    { "key": "listingId",         "value": "lst_seed_001" },
+    { "key": "orderId",           "value": "" },
+    { "key": "sellerUsername",    "value": "seller" },
+    { "key": "sellerPassword",    "value": "seller123" },
+    { "key": "buyerUsername",     "value": "buyer" },
+    { "key": "buyerPassword",     "value": "buyer123" },
+    { "key": "controllerUsername","value": "controller" },
+    { "key": "controllerPassword","value": "controller123" },
+    { "key": "paymentWebhookToken","value": "change-me" }
   ]
 }
