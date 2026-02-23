@@ -10,6 +10,8 @@ public record OrderResponse(
     String buyerId,
     String sellerId,
     String status,
+    String paymentIntentId,
+    String clientSecret,
     Pricing pricing
 ) {
     public record Pricing(
@@ -31,6 +33,8 @@ public record OrderResponse(
             order.getBuyerId(),
             order.getSellerId(),
             order.getStatus().name(),
+            order.getStripePaymentIntentId(),
+            order.getStripeClientSecret(),
             new Pricing(
                 order.getPricing().ticketPrice().amount(),
                 order.getPricing().sellerFee().amount(),

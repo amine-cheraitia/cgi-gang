@@ -44,6 +44,7 @@ public class JpaOrderRepositoryAdapter implements OrderRepository {
         entity.setPlatformRevenue(order.getPricing().platformRevenue().amount());
         entity.setCurrency(order.getPricing().ticketPrice().currency().getCurrencyCode());
         entity.setStatus(order.getStatus().name());
+        entity.setStripePaymentIntentId(order.getStripePaymentIntentId());
         return entity;
     }
 
@@ -63,7 +64,8 @@ public class JpaOrderRepositoryAdapter implements OrderRepository {
             entity.getBuyerId(),
             entity.getSellerId(),
             pricing,
-            OrderStatus.valueOf(entity.getStatus())
+            OrderStatus.valueOf(entity.getStatus()),
+            entity.getStripePaymentIntentId()
         );
     }
 }

@@ -27,7 +27,13 @@ brevo:
   sender-name: Marketplace API
 
 payment:
+  provider: ${PAYMENT_PROVIDER:fake}
   webhook-token: ${PAYMENT_WEBHOOK_TOKEN:change-me}
+
+stripe:
+  public-key: ${STRIPE_PUBLIC_KEY:}
+  secret-key: ${STRIPE_SECRET_KEY:}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
 
 storage:
   provider: local

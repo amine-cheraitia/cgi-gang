@@ -5,10 +5,10 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.23.xsd">
 
-    <include file="db/changelog/001-initial-schema.xml"/>
-    <include file="db/changelog/002-seed-data.xml"/>
-    <include file="db/changelog/003-user-email.xml"/>
-    <include file="db/changelog/004-waitlist.xml"/>
-    <include file="db/changelog/005-stripe.xml"/>
+    <changeSet id="005-orders-stripe" author="assistant">
+        <addColumn tableName="orders">
+            <column name="stripe_payment_intent_id" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
 
 </databaseChangeLog>

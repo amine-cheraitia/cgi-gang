@@ -4,6 +4,8 @@ import com.marketplace.listing.domain.model.Listing;
 import com.marketplace.listing.domain.model.ListingStatus;
 import com.marketplace.listing.domain.repository.ListingRepository;
 import com.marketplace.listing.domain.valueobject.ExternalEventId;
+import com.marketplace.payment.domain.port.PaymentGateway;
+import com.marketplace.payment.domain.port.PaymentIntentResult;
 import com.marketplace.sales.domain.model.Order;
 import com.marketplace.sales.domain.repository.OrderRepository;
 import com.marketplace.shared.application.event.ApplicationEventDispatcher;
@@ -22,6 +24,8 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -34,6 +38,8 @@ class PlaceOrderUseCaseTest {
     private OrderRepository orderRepository;
     @Mock
     private ApplicationEventDispatcher eventDispatcher;
+    @Mock
+    private PaymentGateway paymentGateway;
     @InjectMocks
     private PlaceOrderUseCase useCase;
 
@@ -48,6 +54,8 @@ class PlaceOrderUseCaseTest {
         );
         when(listingRepository.findById("listing-1")).thenReturn(Optional.of(listing));
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(paymentGateway.createPaymentIntent(anyString(), anyLong(), anyString()))
+            .thenReturn(new PaymentIntentResult("pi_test_123", "pi_test_123_secret"));
 
         Order result = useCase.execute("listing-1", "buyer-1");
 

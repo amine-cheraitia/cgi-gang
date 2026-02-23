@@ -12,14 +12,17 @@ public class Order {
     private final String sellerId;
     private final PricingBreakdown pricing;
     private OrderStatus status;
+    private String stripePaymentIntentId;
+    private String stripeClientSecret;
 
-    private Order(String id, String listingId, String buyerId, String sellerId, PricingBreakdown pricing, OrderStatus status) {
+    private Order(String id, String listingId, String buyerId, String sellerId, PricingBreakdown pricing, OrderStatus status, String stripePaymentIntentId) {
         this.id = id;
         this.listingId = listingId;
         this.buyerId = buyerId;
         this.sellerId = sellerId;
         this.pricing = pricing;
         this.status = status;
+        this.stripePaymentIntentId = stripePaymentIntentId;
     }
 
     public static Order place(String listingId, String buyerId, String sellerId, Money ticketPrice) {
@@ -33,11 +36,20 @@ public class Order {
             throw new IllegalArgumentException("Seller id is required");
         }
         PricingBreakdown pricing = PricingBreakdown.calculate(ticketPrice);
-        return new Order(UUID.randomUUID().toString(), listingId, buyerId, sellerId, pricing, OrderStatus.PENDING_PAYMENT);
+        return new Order(UUID.randomUUID().toString(), listingId, buyerId, sellerId, pricing, OrderStatus.PENDING_PAYMENT, null);
     }
 
     public static Order rehydrate(String id, String listingId, String buyerId, String sellerId, PricingBreakdown pricing, OrderStatus status) {
-        return new Order(id, listingId, buyerId, sellerId, pricing, status);
+        return new Order(id, listingId, buyerId, sellerId, pricing, status, null);
+    }
+
+    public static Order rehydrate(String id, String listingId, String buyerId, String sellerId, PricingBreakdown pricing, OrderStatus status, String stripePaymentIntentId) {
+        return new Order(id, listingId, buyerId, sellerId, pricing, status, stripePaymentIntentId);
+    }
+
+    public void attachPaymentIntent(String intentId, String clientSecret) {
+        this.stripePaymentIntentId = intentId;
+        this.stripeClientSecret = clientSecret;
     }
 
     public void confirmPayment() {
@@ -60,4 +72,6 @@ public class Order {
     public String getSellerId() { return sellerId; }
     public PricingBreakdown getPricing() { return pricing; }
     public OrderStatus getStatus() { return status; }
+    public String getStripePaymentIntentId() { return stripePaymentIntentId; }
+    public String getStripeClientSecret() { return stripeClientSecret; }
 }

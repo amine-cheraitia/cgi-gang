@@ -36,6 +36,8 @@ public class OrderEntity {
     private String currency;
     @Column(name = "status", nullable = false)
     private String status;
+    @Column(name = "stripe_payment_intent_id")
+    private String stripePaymentIntentId;
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -63,4 +65,6 @@ public class OrderEntity {
     public void setCurrency(String currency) { this.currency = currency; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public String getStripePaymentIntentId() { return stripePaymentIntentId; }
+    public void setStripePaymentIntentId(String stripePaymentIntentId) { this.stripePaymentIntentId = stripePaymentIntentId; }
 }
