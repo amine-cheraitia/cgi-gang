@@ -72,7 +72,12 @@ public class DotEnvEnvironmentPostProcessor implements EnvironmentPostProcessor,
         if (Files.isReadable(candidate)) {
             return candidate;
         }
-        // 2. Deux niveaux au-dessus (cas où le working dir est marketplace-infrastructure/)
+        // 2. Un niveau au-dessus (cas où le working dir est marketplace-infrastructure/)
+        candidate = Paths.get("../.env").toAbsolutePath().normalize();
+        if (Files.isReadable(candidate)) {
+            return candidate;
+        }
+        // 3. Deux niveaux au-dessus (cas où le working dir est marketplace-infrastructure/target/...)
         candidate = Paths.get("../../.env").toAbsolutePath().normalize();
         if (Files.isReadable(candidate)) {
             return candidate;
