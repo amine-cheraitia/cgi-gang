@@ -59,7 +59,7 @@ public class ListingController {
     }
 
     @GetMapping
-    @Operation(summary = "Lister les annonces publiques", description = "Retourne uniquement les annonces certifiees visibles.")
+    @Operation(summary = "Billets certifies disponibles", description = "Retourne toutes les annonces certifiees disponibles a l'achat. Accessible sans authentification.")
     public List<ListingResponse> listPublic() {
         return listPublicListingsUseCase.execute().stream().map(ListingResponse::from).toList();
     }

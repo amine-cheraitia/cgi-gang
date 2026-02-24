@@ -20,4 +20,6 @@ public interface ListingRepository {
     List<Listing> findAllCertifiedByEvent(ExternalEventId eventId);
 
     List<Listing> findAllCertified();
+
+    List<Listing> findAllPendingCertification();
 }

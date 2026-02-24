@@ -59,6 +59,11 @@ public class JpaListingRepositoryAdapter implements ListingRepository {
         return repository.findAllByStatus(ListingStatus.CERTIFIED.name()).stream().map(this::toDomain).toList();
     }
 
+    @Override
+    public List<Listing> findAllPendingCertification() {
+        return repository.findAllByStatus(ListingStatus.PENDING_CERTIFICATION.name()).stream().map(this::toDomain).toList();
+    }
+
     private ListingEntity toEntity(Listing listing) {
         ListingEntity entity = new ListingEntity();
         entity.setId(listing.getId());
