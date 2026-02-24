@@ -25,7 +25,8 @@ public enum ErrorCode {
     PAYMENT_WEBHOOK_INVALID("PAY-002", 400, "Webhook paiement invalide"),
     WAITLIST_SUBSCRIPTION_NOT_FOUND("WAI-001", 404, "Inscription waitlist introuvable"),
     WAITLIST_ALREADY_SUBSCRIBED("WAI-002", 409, "Deja inscrit a la waitlist"),
-    USER_NOT_FOUND("USR-001", 404, "Utilisateur introuvable");
+    USER_NOT_FOUND("USR-001", 404, "Utilisateur introuvable"),
+    USER_ALREADY_EXISTS("USR-002", 409, "Nom d'utilisateur ou email deja utilise");
 
     private final String code;
     private final int httpStatus;

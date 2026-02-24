@@ -7,11 +7,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 import java.io.IOException;
@@ -29,6 +28,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/listings").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/events/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/files/**").permitAll()
@@ -62,24 +62,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    InMemoryUserDetailsManager userDetailsService() {
-        UserDetails seller = User.withUsername("seller")
-            .password("{noop}seller123")
-            .roles("SELLER")
-            .build();
-        UserDetails controller = User.withUsername("controller")
-            .password("{noop}controller123")
-            .roles("CONTROLLER")
-            .build();
-        UserDetails buyer = User.withUsername("buyer")
-            .password("{noop}buyer123")
-            .roles("BUYER")
-            .build();
-        UserDetails admin = User.withUsername("admin")
-            .password("{noop}admin123")
-            .roles("ADMIN", "CONTROLLER", "SELLER", "BUYER")
-            .build();
-        return new InMemoryUserDetailsManager(seller, controller, buyer, admin);
+    PasswordEncoder passwordEncoder() {
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
     private void writeError(jakarta.servlet.http.HttpServletResponse response, ErrorCode code) throws IOException {
