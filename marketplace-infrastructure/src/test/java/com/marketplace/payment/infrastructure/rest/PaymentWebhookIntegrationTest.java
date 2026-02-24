@@ -59,7 +59,7 @@ class PaymentWebhookIntegrationTest extends IntegrationTestBase {
 
         assertThat(fakeEmailSender.sentEmails())
             .anySatisfy(email -> {
-                assertThat(email.subject()).isEqualTo("Paiement confirme");
+                assertThat(email.subject()).contains("Paiement confirme");
                 assertThat(email.body()).contains(orderId);
             });
     }

@@ -27,7 +27,8 @@ public class OrderPaidTemplateStrategy implements EmailTemplateStrategy {
             + "Le paiement de la commande " + orderId + " a ete confirme avec succes.\n"
             + (event.isBlank() ? "" : "Evenement : " + event + "\n")
             + "Montant paye : " + buyerTotal + "\n"
-            + "Net vendeur : " + sellerPayout + "\n\n"
+            + "Net vendeur : " + sellerPayout + "\n"
+            + "Revenu plateforme : " + platformRevenue + "\n\n"
             + "Merci d'utiliser MiamCampus !\n\nL'equipe MiamCampus";
 
         String eventLine = event.isBlank() ? "" :
