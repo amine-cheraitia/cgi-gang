@@ -4,3 +4,4 @@
 .DS_Store
 marketplace-infrastructure/data/
 .env
+.mvn/wrapper/maven-wrapper.jar
