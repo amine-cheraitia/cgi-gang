@@ -15,16 +15,39 @@ public class OrderPlacedTemplateStrategy implements EmailTemplateStrategy {
     @Override
     public EmailMessage build(NotificationCommand command) {
         NotificationPayloadValidator.requireKeys(command, "orderId", "buyerTotal");
-        String total = command.data().getOrDefault("buyerTotal", "N/A");
+        String total   = command.data().getOrDefault("buyerTotal", "N/A");
         String orderId = command.data().getOrDefault("orderId", "N/A");
-        String subject = "Commande creee";
+        String event   = command.data().getOrDefault("eventName", "");
+
+        String subject = "Votre commande a bien ete enregistree \uD83C\uDFAB";
+
         String textBody = "Bonjour " + command.recipientName() + ",\n\n"
-            + "Votre commande " + orderId + " est creee.\n"
-            + "Montant total a payer: " + total + ".\n";
-        String htmlBody = EmailHtmlLayout.wrap(subject,
+            + "Votre commande " + orderId + " a ete enregistree avec succes.\n"
+            + (event.isBlank() ? "" : "Evenement : " + event + "\n")
+            + "Montant total : " + total + "\n\n"
+            + "Finalisez votre paiement pour confirmer la reservation.\n\n"
+            + "L'equipe MiamCampus";
+
+        String eventLine = event.isBlank() ? "" :
+            "<p style=\"margin:0 0 8px;\">🎫 Evenement : <strong>" + EmailHtmlLayout.escape(event) + "</strong></p>";
+
+        String htmlBody = EmailHtmlLayout.wrap(
+            subject,
             "<p>Bonjour <strong>" + EmailHtmlLayout.escape(command.recipientName()) + "</strong>,</p>"
-                + "<p>Votre commande <strong>" + EmailHtmlLayout.escape(orderId) + "</strong> est creee.</p>"
-                + "<p>Montant total a payer: <strong>" + EmailHtmlLayout.escape(total) + "</strong>.</p>");
+            + "<p>Votre commande a bien ete enregistree sur MiamCampus.</p>"
+            + eventLine
+            + EmailHtmlLayout.infoTable(
+                EmailHtmlLayout.infoRow("N° commande", orderId),
+                EmailHtmlLayout.infoRow("Montant total", total),
+                EmailHtmlLayout.infoRow("Statut", "En attente de paiement")
+              )
+            + "<p style=\"margin-top:20px;color:#6b7280;font-size:13px;\">"
+            + "Finalisez votre paiement pour confirmer votre billet. "
+            + "Si vous n'etes pas a l'origine de cette commande, ignorez cet email.</p>",
+            "Finaliser le paiement",
+            "https://app.miamcampus.com/orders/" + orderId
+        );
+
         return new EmailMessage(subject, textBody, htmlBody);
     }
 }

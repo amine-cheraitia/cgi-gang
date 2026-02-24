@@ -23,8 +23,8 @@ spring:
 
 brevo:
   api-key: ${BREVO_API_KEY:}
-  sender-email: noreply@marketplace.local
-  sender-name: Marketplace API
+  sender-email: ${BREVO_FROM_EMAIL:noreply@marketplace.local}
+  sender-name: ${BREVO_FROM_NAME:Marketplace}
 
 payment:
   provider: ${PAYMENT_PROVIDER:fake}
