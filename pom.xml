@@ -17,7 +17,7 @@
     <packaging>pom</packaging>
 
     <name>marketplace-api</name>
-    <description>Marketplace revente billets</description>
+    <description>Ticketio - Revente de billets certifies</description>
 
     <properties>
         <java.version>21</java.version>

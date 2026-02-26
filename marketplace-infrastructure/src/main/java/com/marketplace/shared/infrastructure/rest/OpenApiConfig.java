@@ -11,12 +11,12 @@ import org.springframework.context.annotation.Configuration;
 public class OpenApiConfig {
 
     @Bean
-    OpenAPI marketplaceOpenAPI() {
+    OpenAPI ticketioOpenAPI() {
         final String schemeName = "basicAuth";
         return new OpenAPI()
             .info(new Info()
-                .title("Marketplace Revente Billets API")
-                .description("API modulaire pour revente de billets certifies avec notifications, waitlist et paiements.")
+                .title("Ticketio API")
+                .description("API Ticketio pour revente de billets certifies avec notifications, waitlist et paiements.")
                 .version("v1"))
             .addSecurityItem(new SecurityRequirement().addList(schemeName))
             .schemaRequirement(schemeName, new SecurityScheme()

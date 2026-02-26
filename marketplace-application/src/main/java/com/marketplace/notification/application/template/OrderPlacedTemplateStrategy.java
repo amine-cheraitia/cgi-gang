@@ -26,7 +26,7 @@ public class OrderPlacedTemplateStrategy implements EmailTemplateStrategy {
             + (event.isBlank() ? "" : "Evenement : " + event + "\n")
             + "Montant total : " + total + "\n\n"
             + "Finalisez votre paiement pour confirmer la reservation.\n\n"
-            + "L'equipe MiamCampus";
+            + "L'equipe Ticketio";
 
         String eventLine = event.isBlank() ? "" :
             "<p style=\"margin:0 0 8px;\">🎫 Evenement : <strong>" + EmailHtmlLayout.escape(event) + "</strong></p>";
@@ -34,7 +34,7 @@ public class OrderPlacedTemplateStrategy implements EmailTemplateStrategy {
         String htmlBody = EmailHtmlLayout.wrap(
             subject,
             "<p>Bonjour <strong>" + EmailHtmlLayout.escape(command.recipientName()) + "</strong>,</p>"
-            + "<p>Votre commande a bien ete enregistree sur MiamCampus.</p>"
+            + "<p>Votre commande a bien ete enregistree sur Ticketio.</p>"
             + eventLine
             + EmailHtmlLayout.infoTable(
                 EmailHtmlLayout.infoRow("N° commande", orderId),
@@ -45,7 +45,7 @@ public class OrderPlacedTemplateStrategy implements EmailTemplateStrategy {
             + "Finalisez votre paiement pour confirmer votre billet. "
             + "Si vous n'etes pas a l'origine de cette commande, ignorez cet email.</p>",
             "Finaliser le paiement",
-            "https://app.miamcampus.com/orders/" + orderId
+            "https://app.ticketio.com/orders/" + orderId
         );
 
         return new EmailMessage(subject, textBody, htmlBody);

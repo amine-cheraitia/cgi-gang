@@ -27,7 +27,7 @@ public class WaitlistAvailableTemplateStrategy implements EmailTemplateStrategy 
             + (eventDate.isBlank() ? "" : "Date : " + eventDate + "\n")
             + (venue.isBlank()     ? "" : "Lieu : " + venue + "\n")
             + "Prix a partir de : " + startingPrice + "\n\n"
-            + "Depechez-vous, les billets partent vite !\n\nL'equipe MiamCampus";
+            + "Depechez-vous, les billets partent vite !\n\nL'equipe Ticketio";
 
         String dateRow  = eventDate.isBlank() ? "" : EmailHtmlLayout.infoRow("Date", eventDate);
         String venueRow = venue.isBlank()     ? "" : EmailHtmlLayout.infoRow("Lieu", venue);
@@ -47,7 +47,7 @@ public class WaitlistAvailableTemplateStrategy implements EmailTemplateStrategy 
             + "<p style=\"color:#6b7280;font-size:13px;\">"
             + "Vous recevez cet email car vous etes inscrit sur la liste d'attente pour cet evenement.</p>",
             "Voir les billets disponibles",
-            "https://app.miamcampus.com/events"
+            "https://app.ticketio.com/events"
         );
 
         return new EmailMessage(subject, textBody, htmlBody);

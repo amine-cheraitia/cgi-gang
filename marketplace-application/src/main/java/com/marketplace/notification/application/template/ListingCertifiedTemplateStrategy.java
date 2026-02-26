@@ -23,9 +23,9 @@ public class ListingCertifiedTemplateStrategy implements EmailTemplateStrategy {
 
         String textBody = "Bonjour " + command.recipientName() + ",\n\n"
             + "Bonne nouvelle ! Votre billet pour " + eventName + " a ete certifie.\n"
-            + "Il est maintenant visible sur MiamCampus et peut etre achete par des acheteurs.\n"
+            + "Il est maintenant visible sur Ticketio et peut etre achete par des acheteurs.\n"
             + (price.isBlank() ? "" : "Prix de vente : " + price + "\n")
-            + "\nL'equipe MiamCampus";
+            + "\nL'equipe Ticketio";
 
         String priceRow = price.isBlank() ? "" : EmailHtmlLayout.infoRow("Prix de vente", price);
 
@@ -43,7 +43,7 @@ public class ListingCertifiedTemplateStrategy implements EmailTemplateStrategy {
             + "Votre billet est desormais visible par tous les acheteurs sur la marketplace. "
             + "Vous recevrez une notification des qu'il sera vendu.</p>",
             "Voir mon annonce",
-            "https://app.miamcampus.com/listings/" + listingId
+            "https://app.ticketio.com/listings/" + listingId
         );
 
         return new EmailMessage(subject, textBody, htmlBody);

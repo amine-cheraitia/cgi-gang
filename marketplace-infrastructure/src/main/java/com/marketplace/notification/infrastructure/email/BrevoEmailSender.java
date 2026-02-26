@@ -22,10 +22,10 @@ public class BrevoEmailSender implements EmailSender {
     @Value("${brevo.api-key:}")
     private String apiKey;
 
-    @Value("${brevo.sender-email:noreply@marketplace.local}")
+    @Value("${brevo.sender-email:noreply@ticketio.app}")
     private String senderEmail;
 
-    @Value("${brevo.sender-name:Marketplace}")
+    @Value("${brevo.sender-name:Ticketio}")
     private String senderName;
 
     @Override

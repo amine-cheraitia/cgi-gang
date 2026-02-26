@@ -1,8 +1,8 @@
 {
   "info": {
     "_postman_id": "3fdb1fc0-57e4-4cbc-a4cb-2d8a7715a4ea",
-    "name": "Marketplace Revente Billets API",
-    "description": "Collection de validation fonctionnelle pour l'evaluation (catalogue, listings, commandes, waitlist, webhook).",
+    "name": "Ticketio API",
+    "description": "Collection de validation fonctionnelle pour Ticketio (catalogue, listings, commandes, waitlist, webhook).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [

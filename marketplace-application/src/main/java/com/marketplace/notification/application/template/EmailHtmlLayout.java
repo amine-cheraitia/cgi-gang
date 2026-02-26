@@ -45,10 +45,10 @@ final class EmailHtmlLayout {
                     <tr>
                       <td style="background-color:%s;padding:28px 40px;text-align:center;">
                         <span style="color:#ffffff;font-size:26px;font-weight:800;letter-spacing:-0.5px;">
-                          Miam<span style="opacity:0.85">Campus</span>
+                          Ticketio
                         </span>
                         <p style="color:rgba(255,255,255,0.85);margin:6px 0 0;font-size:13px;">
-                          Marketplace de billets
+                          Revente de billets certifies
                         </p>
                       </td>
                     </tr>
@@ -70,8 +70,8 @@ final class EmailHtmlLayout {
                     <tr>
                       <td style="background-color:#f9fafb;padding:24px 40px;border-top:1px solid #e5e7eb;">
                         <p style="margin:0;font-size:12px;color:%s;text-align:center;">
-                          © 2026 MiamCampus · Vous recevez cet email car vous avez un compte sur notre plateforme.<br/>
-                          <a href="mailto:support@miamcampus.com"
+                          © 2026 Ticketio · Vous recevez cet email car vous avez un compte sur notre plateforme.<br/>
+                          <a href="mailto:support@ticketio.app"
                              style="color:%s;text-decoration:none;">Contacter le support</a>
                         </p>
                       </td>

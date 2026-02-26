@@ -29,7 +29,7 @@ public class OrderPaidTemplateStrategy implements EmailTemplateStrategy {
             + "Montant paye : " + buyerTotal + "\n"
             + "Net vendeur : " + sellerPayout + "\n"
             + "Revenu plateforme : " + platformRevenue + "\n\n"
-            + "Merci d'utiliser MiamCampus !\n\nL'equipe MiamCampus";
+            + "Merci d'utiliser Ticketio !\n\nL'equipe Ticketio";
 
         String eventLine = event.isBlank() ? "" :
             "<p style=\"margin:0 0 4px;\">🎫 Evenement : <strong>" + EmailHtmlLayout.escape(event) + "</strong></p>";
@@ -50,7 +50,7 @@ public class OrderPaidTemplateStrategy implements EmailTemplateStrategy {
             + "Conservez cet email comme preuve d'achat. Presentez votre billet le jour J."
             + "</p>",
             "Voir ma commande",
-            "https://app.miamcampus.com/orders/" + orderId
+            "https://app.ticketio.com/orders/" + orderId
         );
 
         return new EmailMessage(subject, textBody, htmlBody);

@@ -1,6 +1,6 @@
-# Marketplace Revente Billets API
+# Ticketio API
 
-API REST modulaire pour revente de billets avec clean architecture, DDD, royalties, security, tests automatises, Docker/CI.
+API REST Ticketio pour revente de billets avec clean architecture, DDD, royalties, security, tests automatises, Docker/CI.
 
 ## Avancement Barème (Mises a jour progressives)
 
@@ -195,7 +195,7 @@ classDiagram
 
 ```mermaid
 flowchart LR
-    Buyer["Buyer"] --> API["Marketplace API (Spring Boot)"]
+    Buyer["Buyer"] --> API["Ticketio API (Spring Boot)"]
     Seller["Seller"] --> API
     Controller["Controller"] --> API
 
