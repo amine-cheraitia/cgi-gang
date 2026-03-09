@@ -1,9 +1,20 @@
 # Guide de démo API – Marketplace revente de billets
 
-Ce guide décrit un **parcours complet** pour démontrer l’API : **consultation du catalogue → vente (annonce) → certification → achat → paiement**.  
-Tu peux utiliser **Postman**, **curl** ou **Swagger UI** (`http://localhost:8080/swagger-ui.html`).
+Ce guide décrit un **parcours complet** pour démontrer l’API. Tu peux utiliser **Postman**, **curl** ou **Swagger UI** (`http://localhost:8080/swagger-ui.html`).
 
 **Prérequis :** l’application tourne sur `http://localhost:8080` (ou le port configuré dans `application.yml`).
+
+---
+
+## Logique métier du parcours
+
+En suivant la logique du métier :
+
+1. **La vente commence** — Le vendeur crée une annonce (mise en vente d’un billet pour un événement).
+2. **Le contrôleur authentifie le billet** — Une annonce est d’abord en attente ; le contrôleur la certifie pour qu’elle devienne achetable.
+3. **Pour finir, l’achat** — L’acheteur passe commande sur une annonce certifiée, puis le paiement est confirmé.
+
+Résumé : **Vente (annonce) → Certification du billet → Achat (commande + paiement)**.
 
 ---
 
@@ -18,20 +29,17 @@ Ou depuis ton IDE : lancer la classe `MarketplaceApplication`.
 
 ---
 
-## 2. Ordre recommandé des appels (parcours “achat”)
+## 2. Ordre des appels (aligné sur la logique métier)
 
-| Étape | Rôle      | Endpoint | Action |
-|-------|-----------|----------|--------|
-| 1     | Public    | Catalogue | Voir les événements |
-| 2     | Public    | Catalogue | Choisir un événement |
-| 3     | Vendeur   | Listings | Créer une annonce |
-| 4     | Contrôleur| Certification | Certifier l’annonce |
-| 5     | Public    | Listings | Voir les annonces disponibles |
-| 6     | Acheteur  | Orders   | Passer commande |
-| 7     | Acheteur  | Orders   | Consulter la commande |
-| 8     | Contrôleur| Orders   | Marquer la commande comme payée |
+| Étape | Phase | Rôle      | Endpoint | Action |
+|-------|--------|-----------|----------|--------|
+| 1–2   | (contexte) | Public | Catalogue | Voir / choisir un événement |
+| **3** | **1. Vente** | Vendeur | Listings | Créer une annonce (mise en vente) |
+| **4** | **2. Certification** | Contrôleur | Certification | Authentifier / certifier le billet |
+| 5     | (vérif) | Public | Listings | Voir les annonces disponibles (certifiées) |
+| **6–8** | **3. Achat** | Acheteur / Contrôleur | Orders | Passer commande → consulter → marquer payée |
 
-Optionnel : **waitlist** (s’inscrire en attente pour un événement) et **webhook paiement**.
+Optionnel : **waitlist** (s’inscrire en attente) et **webhook paiement**.
 
 ---
 
@@ -90,7 +98,7 @@ Réponse **201** avec un `id` (ex. `lst_xxx`). **Note cet `id`** → c’est ton
 
 ---
 
-### Étape 4 – Certifier l’annonce (contrôleur)
+### Étape 4 – Le contrôleur authentifie le billet (certification)
 
 **Auth :** Basic `controller` / `controller123`
 
@@ -100,7 +108,7 @@ POST http://localhost:8080/api/certification/{listingId}/certify
 
 Remplace `{listingId}` par l’id reçu à l’étape 3 (ex. `POST .../api/certification/lst_abc123/certify`).
 
-Réponse **200** avec `"status": "CERTIFIED"`. L’annonce devient visible côté “billets disponibles”.
+Réponse **200** avec `"status": "CERTIFIED"`. Le billet est authentifié ; l’annonce devient visible côté “billets disponibles”.
 
 ---
 
@@ -195,16 +203,25 @@ Liste toutes les annonces en `PENDING_CERTIFICATION` (à certifier ou refuser).
 
 ## 6. Résumé “ordre des endpoints” pour la démo
 
+**Contexte (catalogue)**  
 1. **GET** `/api/events/search?query=Taylor` → choisir un événement  
 2. **GET** `/api/events/evt_taylor_paris` → détail événement  
-3. **POST** `/api/listings` (seller) → créer annonce → récupérer `listingId`  
-4. **POST** `/api/certification/{listingId}/certify` (controller) → certifier  
-5. **GET** `/api/listings` → vérifier que l’annonce est visible  
-6. **POST** `/api/orders` (buyer) → créer commande → récupérer `orderId`  
-7. **GET** `/api/orders/{orderId}` (buyer) → détail commande  
-8. **POST** `/api/orders/{orderId}/pay` (controller) → confirmer paiement  
 
-Ensuite tu peux enchaîner avec la waitlist et le webhook paiement si tu veux montrer la partie “notification” et “paiement externe”.
+**1. Vente**  
+3. **POST** `/api/listings` (seller) → créer l’annonce (la vente commence) → récupérer `listingId`  
+
+**2. Le contrôleur authentifie le billet**  
+4. **POST** `/api/certification/{listingId}/certify` (controller) → certifier l’annonce  
+
+**Vérification**  
+5. **GET** `/api/listings` → vérifier que l’annonce certifiée est visible  
+
+**3. Achat (pour finir)**  
+6. **POST** `/api/orders` (buyer) → créer la commande → récupérer `orderId`  
+7. **GET** `/api/orders/{orderId}` (buyer) → détail commande  
+8. **POST** `/api/orders/{orderId}/pay` (controller) → confirmer le paiement  
+
+Ensuite : waitlist et webhook paiement en option pour la notification et le paiement externe.
 
 ---
 
