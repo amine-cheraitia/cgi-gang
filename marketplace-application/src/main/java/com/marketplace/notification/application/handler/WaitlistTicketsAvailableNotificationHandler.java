@@ -8,7 +8,6 @@ import com.marketplace.notification.application.port.UserContactProvider;
 import com.marketplace.notification.application.usecase.SendNotificationUseCase;
 import com.marketplace.shared.application.event.ApplicationEvent;
 import com.marketplace.shared.application.event.ApplicationEventHandler;
-import com.marketplace.waitlist.domain.repository.WaitlistSubscriptionRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -17,16 +16,13 @@ import java.util.Map;
 public class WaitlistTicketsAvailableNotificationHandler
     implements ApplicationEventHandler<WaitlistTicketsAvailableApplicationEvent> {
 
-    private final WaitlistSubscriptionRepository waitlistSubscriptionRepository;
     private final CatalogProvider catalogProvider;
     private final UserContactProvider userContactProvider;
     private final SendNotificationUseCase sendNotificationUseCase;
 
-    public WaitlistTicketsAvailableNotificationHandler(WaitlistSubscriptionRepository waitlistSubscriptionRepository,
-                                                       CatalogProvider catalogProvider,
+    public WaitlistTicketsAvailableNotificationHandler(CatalogProvider catalogProvider,
                                                        UserContactProvider userContactProvider,
                                                        SendNotificationUseCase sendNotificationUseCase) {
-        this.waitlistSubscriptionRepository = waitlistSubscriptionRepository;
         this.catalogProvider = catalogProvider;
         this.userContactProvider = userContactProvider;
         this.sendNotificationUseCase = sendNotificationUseCase;
@@ -39,19 +35,18 @@ public class WaitlistTicketsAvailableNotificationHandler
 
     @Override
     public void handle(WaitlistTicketsAvailableApplicationEvent event) {
+        // FIFO : on notifie uniquement l'utilisateur ciblé par l'événement
         String displayEventName = resolveEventDisplayName(event.eventId());
-        waitlistSubscriptionRepository.findByEventId(event.eventId()).forEach(subscription -> {
-            UserContactProvider.UserContact user = userContactProvider.getByUserId(subscription.getUserId());
-            sendNotificationUseCase.execute(new NotificationCommand(
-                user.email(),
-                user.username(),
-                NotificationEventType.WAITLIST_TICKETS_AVAILABLE,
-                Map.of(
-                    "eventName", displayEventName,
-                    "startingPrice", event.startingPrice()
-                )
-            ));
-        });
+        UserContactProvider.UserContact user = userContactProvider.getByUserId(event.targetUserId());
+        sendNotificationUseCase.execute(new NotificationCommand(
+            user.email(),
+            user.username(),
+            NotificationEventType.WAITLIST_TICKETS_AVAILABLE,
+            Map.of(
+                "eventName", displayEventName,
+                "startingPrice", event.startingPrice()
+            )
+        ));
     }
 
     private String resolveEventDisplayName(String eventId) {

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.23.xsd">
+
+    <changeSet id="007-waitlist-fifo-status" author="assistant">
+        <!-- Statut FIFO : WAITING, NOTIFIED, EXPIRED, PURCHASED -->
+        <addColumn tableName="waitlist_subscriptions">
+            <column name="status" type="varchar(20)" defaultValue="WAITING">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <!-- Timestamp de notification pour calculer l'expiration de la fenêtre -->
+        <addColumn tableName="waitlist_subscriptions">
+            <column name="notified_at" type="timestamp with time zone"/>
+        </addColumn>
+
+        <!-- Index pour accélérer la recherche du premier WAITING par événement -->
+        <createIndex tableName="waitlist_subscriptions" indexName="idx_waitlist_event_status_created">
+            <column name="event_id"/>
+            <column name="status"/>
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,15 +1,14 @@
 package com.marketplace.waitlist.infrastructure.persistence;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.marketplace.waitlist.domain.model.WaitlistStatus;
+import jakarta.persistence.*;
 
 import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "waitlist_subscriptions")
 public class WaitlistSubscriptionEntity {
+
     @Id
     @Column(name = "id", nullable = false, length = 64)
     private String id;
@@ -23,35 +22,28 @@ public class WaitlistSubscriptionEntity {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
-    public String getId() {
-        return id;
-    }
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
+    private WaitlistStatus status;
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    @Column(name = "notified_at")
+    private OffsetDateTime notifiedAt;
 
-    public String getEventId() {
-        return eventId;
-    }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    public void setEventId(String eventId) {
-        this.eventId = eventId;
-    }
+    public String getEventId() { return eventId; }
+    public void setEventId(String eventId) { this.eventId = eventId; }
 
-    public String getUserId() {
-        return userId;
-    }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
+    public OffsetDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
 
-    public OffsetDateTime getCreatedAt() {
-        return createdAt;
-    }
+    public WaitlistStatus getStatus() { return status; }
+    public void setStatus(WaitlistStatus status) { this.status = status; }
 
-    public void setCreatedAt(OffsetDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
+    public OffsetDateTime getNotifiedAt() { return notifiedAt; }
+    public void setNotifiedAt(OffsetDateTime notifiedAt) { this.notifiedAt = notifiedAt; }
 }

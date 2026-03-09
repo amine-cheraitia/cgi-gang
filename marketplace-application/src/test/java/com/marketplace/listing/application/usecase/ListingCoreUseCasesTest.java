@@ -9,6 +9,9 @@ import com.marketplace.shared.application.event.ApplicationEventDispatcher;
 import com.marketplace.shared.domain.exception.BusinessException;
 import com.marketplace.shared.domain.exception.ErrorCode;
 import com.marketplace.shared.domain.valueobject.Money;
+import com.marketplace.waitlist.domain.model.WaitlistStatus;
+import com.marketplace.waitlist.domain.model.WaitlistSubscription;
+import com.marketplace.waitlist.domain.repository.WaitlistSubscriptionRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -17,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,6 +36,8 @@ class ListingCoreUseCasesTest {
 
     @Mock
     private ListingRepository listingRepository;
+    @Mock
+    private WaitlistSubscriptionRepository waitlistRepository;
     @Mock
     private ApplicationEventDispatcher dispatcher;
 
@@ -56,7 +62,36 @@ class ListingCoreUseCasesTest {
     }
 
     @Test
-    void certifyShouldDispatchTwoEvents() {
+    void certifyShouldDispatchWaitlistEventWhenSubscriberExists() {
+        Listing listing = Listing.rehydrate(
+            "listing-1",
+            new ExternalEventId("evt-1"),
+            "seller-1",
+            Money.euros(65),
+            ListingStatus.PENDING_CERTIFICATION
+        );
+        WaitlistSubscription firstInLine = WaitlistSubscription.rehydrate(
+            "w-1", "evt-1", "buyer-1",
+            OffsetDateTime.now().minusHours(1),
+            WaitlistStatus.WAITING, null
+        );
+        when(listingRepository.findById("listing-1")).thenReturn(Optional.of(listing));
+        when(listingRepository.save(any(Listing.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(waitlistRepository.findFirstWaitingByEventId("evt-1")).thenReturn(Optional.of(firstInLine));
+        when(waitlistRepository.save(any(WaitlistSubscription.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Listing result = certifyListingUseCase.execute("listing-1");
+
+        assertThat(result.getStatus()).isEqualTo(ListingStatus.CERTIFIED);
+        ArgumentCaptor<ApplicationEvent> events = ArgumentCaptor.forClass(ApplicationEvent.class);
+        // 2 events : ListingCertified + WaitlistTicketsAvailable
+        verify(dispatcher, times(2)).dispatch(events.capture());
+        assertThat(events.getAllValues()).extracting(e -> e.getClass().getSimpleName())
+            .containsExactly("ListingCertifiedApplicationEvent", "WaitlistTicketsAvailableApplicationEvent");
+    }
+
+    @Test
+    void certifyShouldDispatchOnlyListingCertifiedWhenNoSubscriber() {
         Listing listing = Listing.rehydrate(
             "listing-1",
             new ExternalEventId("evt-1"),
@@ -65,15 +100,13 @@ class ListingCoreUseCasesTest {
             ListingStatus.PENDING_CERTIFICATION
         );
         when(listingRepository.findById("listing-1")).thenReturn(Optional.of(listing));
-        when(listingRepository.save(any(Listing.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(listingRepository.save(any(Listing.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(waitlistRepository.findFirstWaitingByEventId("evt-1")).thenReturn(Optional.empty());
 
-        Listing result = certifyListingUseCase.execute("listing-1");
+        certifyListingUseCase.execute("listing-1");
 
-        assertThat(result.getStatus()).isEqualTo(ListingStatus.CERTIFIED);
-        ArgumentCaptor<ApplicationEvent> events = ArgumentCaptor.forClass(ApplicationEvent.class);
-        verify(dispatcher, times(2)).dispatch(events.capture());
-        assertThat(events.getAllValues()).extracting(e -> e.getClass().getSimpleName())
-            .containsExactly("ListingCertifiedApplicationEvent", "WaitlistTicketsAvailableApplicationEvent");
+        // Seul l'événement de certification est dispatché (personne en waitlist)
+        verify(dispatcher, times(1)).dispatch(any());
     }
 
     @Test

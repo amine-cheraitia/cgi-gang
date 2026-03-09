@@ -12,8 +12,6 @@ import com.marketplace.notification.application.usecase.SendNotificationUseCase;
 import com.marketplace.shared.application.event.ApplicationEvent;
 import com.marketplace.shared.domain.exception.BusinessException;
 import com.marketplace.shared.domain.exception.ErrorCode;
-import com.marketplace.waitlist.domain.model.WaitlistSubscription;
-import com.marketplace.waitlist.domain.repository.WaitlistSubscriptionRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -22,8 +20,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,8 +35,6 @@ class NotificationHandlersTest {
     @Mock
     private SendNotificationUseCase sendNotificationUseCase;
     @Mock
-    private WaitlistSubscriptionRepository waitlistSubscriptionRepository;
-    @Mock
     private CatalogProvider catalogProvider;
 
     @InjectMocks
@@ -55,7 +49,7 @@ class NotificationHandlersTest {
     @Test
     void listingCertifiedHandlerShouldSupportAndDispatchNotification() {
         when(userContactProvider.getByUserId("seller-1"))
-            .thenReturn(new UserContactProvider.UserContact("seller-1", "seller", "seller@marketplace.local"));
+            .thenReturn(new UserContactProvider.UserContact("seller-1", "seller", "seller@ticketio.app"));
         ListingCertifiedApplicationEvent event = new ListingCertifiedApplicationEvent("listing-1", "seller-1", "evt-1");
 
         assertThat(listingCertifiedHandler.supports(event)).isTrue();
@@ -71,9 +65,9 @@ class NotificationHandlersTest {
     @Test
     void orderPlacedAndPaidHandlersShouldDispatchNotifications() {
         when(userContactProvider.getByUserId("buyer-1"))
-            .thenReturn(new UserContactProvider.UserContact("buyer-1", "buyer", "buyer@marketplace.local"));
+            .thenReturn(new UserContactProvider.UserContact("buyer-1", "buyer", "buyer@ticketio.app"));
         when(userContactProvider.getByUserId("seller-1"))
-            .thenReturn(new UserContactProvider.UserContact("seller-1", "seller", "seller@marketplace.local"));
+            .thenReturn(new UserContactProvider.UserContact("seller-1", "seller", "seller@ticketio.app"));
 
         orderPlacedHandler.handle(new OrderPlacedApplicationEvent("ord-1", "buyer-1", "100 EUR"));
         orderPaidHandler.handle(new OrderPaidApplicationEvent("ord-1", "buyer-1", "seller-1", "90 EUR", "10 EUR"));
@@ -96,21 +90,27 @@ class NotificationHandlersTest {
     }
 
     @Test
-    void waitlistHandlerShouldResolveCatalogNameWithFallback() {
-        WaitlistSubscription sub = WaitlistSubscription.rehydrate("w-1", "evt-1", "buyer-1", OffsetDateTime.now());
-        when(waitlistSubscriptionRepository.findByEventId("evt-1")).thenReturn(List.of(sub));
+    void waitlistHandlerShouldNotifyTargetUserWithEventName() {
+        // FIFO : l'événement contient déjà le targetUserId, le handler notifie uniquement cet utilisateur
         when(userContactProvider.getByUserId("buyer-1"))
-            .thenReturn(new UserContactProvider.UserContact("buyer-1", "buyer", "buyer@marketplace.local"));
+            .thenReturn(new UserContactProvider.UserContact("buyer-1", "buyer", "buyer@ticketio.app"));
         when(catalogProvider.getEventById("evt-1"))
             .thenReturn(Optional.of(new ExternalEvent("evt-1", "PSG vs OM", Instant.now(), "Parc", "Paris")));
 
-        waitlistHandler.handle(new WaitlistTicketsAvailableApplicationEvent("evt-1", "80 EUR"));
+        waitlistHandler.handle(new WaitlistTicketsAvailableApplicationEvent("evt-1", "buyer-1", "80 EUR"));
 
         verify(sendNotificationUseCase).execute(org.mockito.ArgumentMatchers.argThat(cmd ->
             cmd.data().get("eventName").equals("PSG vs OM")));
+    }
 
-        when(catalogProvider.getEventById("evt-1")).thenThrow(new RuntimeException("down"));
-        waitlistHandler.handle(new WaitlistTicketsAvailableApplicationEvent("evt-1", "80 EUR"));
+    @Test
+    void waitlistHandlerShouldFallbackToEventIdWhenCatalogDown() {
+        when(userContactProvider.getByUserId("buyer-1"))
+            .thenReturn(new UserContactProvider.UserContact("buyer-1", "buyer", "buyer@ticketio.app"));
+        when(catalogProvider.getEventById("evt-1")).thenThrow(new RuntimeException("catalog down"));
+
+        waitlistHandler.handle(new WaitlistTicketsAvailableApplicationEvent("evt-1", "buyer-1", "80 EUR"));
+
         verify(sendNotificationUseCase).execute(org.mockito.ArgumentMatchers.argThat(cmd ->
             cmd.data().get("eventName").equals("evt-1")));
     }
