@@ -1,6 +1,7 @@
 server:
   port: 8080
 
+
 spring:
   mvc:
     pathmatch:
@@ -20,6 +21,8 @@ spring:
   h2:
     console:
       enabled: true
+  profiles:
+    active: dev
 
 brevo:
   api-key: ${BREVO_API_KEY:}
@@ -46,7 +49,7 @@ storage:
     signed-url-duration-seconds: ${STORAGE_S3_SIGNED_URL_DURATION_SECONDS:900}
 
 catalog:
-  provider: ${CATALOG_PROVIDER:mock}
+  provider: ${CATALOG_PROVIDER:ticketmaster}
 
 ticketmaster:
   api-key: ${TICKETMASTER_API_KEY:}

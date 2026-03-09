@@ -4,6 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: marketplace-api
+    # API + Swagger sur http://localhost:8082 (mapping 8082:8080 pour éviter les conflits locaux)
     ports:
       - "8082:8080"
 
