@@ -72,6 +72,7 @@ public class JpaListingRepositoryAdapter implements ListingRepository {
         entity.setPrice(listing.getPrice().amount());
         entity.setCurrency(listing.getPrice().currency().getCurrencyCode());
         entity.setStatus(listing.getStatus().name());
+        entity.setHasTicketAttachment(listing.hasTicketAttachment());
         return entity;
     }
 
@@ -81,7 +82,8 @@ public class JpaListingRepositoryAdapter implements ListingRepository {
             new ExternalEventId(entity.getEventId()),
             entity.getSellerId(),
             Money.of(entity.getPrice(), Currency.getInstance(entity.getCurrency())),
-            ListingStatus.valueOf(entity.getStatus())
+            ListingStatus.valueOf(entity.getStatus()),
+            entity.isHasTicketAttachment()
         );
     }
 }

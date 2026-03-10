@@ -8,7 +8,7 @@
   "item": [
     {
       "name": "RUN - Parcours Evaluatrice",
-      "description": "Parcours conseille en Collection Runner: 1) creer listing, 2) certifier, 3) commander, 4) verifier commande, 5) marquer payee, 6) webhook idempotent.",
+      "description": "Parcours conseille en Collection Runner: 1) creer listing, 2) uploader le ticket (PDF), 3) certifier, 4) commander, 5) verifier commande, 6) marquer payee ou webhook, 7) webhook idempotent.",
       "item": [
         {
           "name": "1. Create listing (SELLER)",
@@ -47,7 +47,30 @@
           ]
         },
         {
-          "name": "2. Certify listing (CONTROLLER)",
+          "name": "2. Upload ticket PDF (SELLER)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtSeller}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": "" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/listings/{{listingId}}/attachments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "listings", "{{listingId}}", "attachments"]
+            }
+          }
+        },
+        {
+          "name": "3. Certify listing (CONTROLLER)",
           "request": {
             "auth": {
               "type": "basic",
@@ -79,7 +102,7 @@
           ]
         },
         {
-          "name": "3. Place order (BUYER)",
+          "name": "4. Place order (BUYER)",
           "request": {
             "auth": {
               "type": "noauth"
@@ -115,7 +138,7 @@
           ]
         },
         {
-          "name": "4. Get order",
+          "name": "5. Get order",
           "request": {
             "auth": {
               "type": "noauth"
@@ -145,7 +168,7 @@
           ]
         },
         {
-          "name": "5. Mark order paid (CONTROLLER)",
+          "name": "6. Mark order paid (CONTROLLER)",
           "request": {
             "auth": {
               "type": "basic",
@@ -177,7 +200,7 @@
           ]
         },
         {
-          "name": "6. Webhook PAID retry (idempotence)",
+          "name": "7. Webhook PAID retry (idempotence)",
           "request": {
             "method": "POST",
             "header": [

@@ -12,5 +12,6 @@
     <include file="db/changelog/005-stripe.xml"/>
     <include file="db/changelog/006-user-password.xml"/>
     <include file="db/changelog/007-waitlist-fifo.xml"/>
+    <include file="db/changelog/007-listing-ticket-attachment-flag.xml"/>
 
 </databaseChangeLog>

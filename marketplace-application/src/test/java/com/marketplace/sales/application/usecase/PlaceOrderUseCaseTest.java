@@ -50,7 +50,8 @@ class PlaceOrderUseCaseTest {
             new ExternalEventId("evt-1"),
             "seller-1",
             Money.euros(100),
-            ListingStatus.CERTIFIED
+            ListingStatus.CERTIFIED,
+            true
         );
         when(listingRepository.findById("listing-1")).thenReturn(Optional.of(listing));
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -83,7 +84,8 @@ class PlaceOrderUseCaseTest {
             new ExternalEventId("evt-1"),
             "seller-1",
             Money.euros(100),
-            ListingStatus.PENDING_CERTIFICATION
+            ListingStatus.PENDING_CERTIFICATION,
+            true
         );
         when(listingRepository.findById("listing-1")).thenReturn(Optional.of(listing));
 

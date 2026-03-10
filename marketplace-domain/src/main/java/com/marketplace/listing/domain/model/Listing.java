@@ -12,17 +12,19 @@ public class Listing {
     private final String sellerId;
     private final Money price;
     private ListingStatus status;
+    private boolean hasTicketAttachment;
 
-    private Listing(String id, ExternalEventId externalEventId, String sellerId, Money price) {
+    private Listing(String id, ExternalEventId externalEventId, String sellerId, Money price, boolean hasTicketAttachment) {
         this.id = id;
         this.externalEventId = externalEventId;
         this.sellerId = sellerId;
         this.price = price;
         this.status = ListingStatus.PENDING_CERTIFICATION;
+        this.hasTicketAttachment = hasTicketAttachment;
     }
 
-    public static Listing rehydrate(String id, ExternalEventId externalEventId, String sellerId, Money price, ListingStatus status) {
-        Listing listing = new Listing(id, externalEventId, sellerId, price);
+    public static Listing rehydrate(String id, ExternalEventId externalEventId, String sellerId, Money price, ListingStatus status, boolean hasTicketAttachment) {
+        Listing listing = new Listing(id, externalEventId, sellerId, price, hasTicketAttachment);
         listing.status = status;
         return listing;
     }
@@ -37,7 +39,7 @@ public class Listing {
         if (price == null || price.isNegative()) {
             throw new IllegalArgumentException("Price must be positive or zero");
         }
-        return new Listing(UUID.randomUUID().toString(), externalEventId, sellerId, price);
+        return new Listing(UUID.randomUUID().toString(), externalEventId, sellerId, price, false);
     }
 
     public void certify() {
@@ -52,6 +54,14 @@ public class Listing {
             throw new IllegalStateException("Only pending listing can be rejected");
         }
         status = ListingStatus.REJECTED;
+    }
+
+    public void markTicketAttached() {
+        this.hasTicketAttachment = true;
+    }
+
+    public boolean hasTicketAttachment() {
+        return hasTicketAttachment;
     }
 
     public boolean isPubliclyVisible() {

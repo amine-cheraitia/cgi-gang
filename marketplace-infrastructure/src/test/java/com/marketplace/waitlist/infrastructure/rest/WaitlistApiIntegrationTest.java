@@ -87,8 +87,7 @@ class WaitlistApiIntegrationTest extends IntegrationTestBase {
         String buyerToken = loginAndGetToken("buyer", "buyer123");
 
         assertErrorCode(mockMvc.perform(delete("/api/waitlist/subscriptions")
-                .with(bearer(buyerToken))
-                .param("eventId", "evt_waitlist_validation")),
+                .with(bearer(buyerToken))),
             400,
             "GEN-001");
     }

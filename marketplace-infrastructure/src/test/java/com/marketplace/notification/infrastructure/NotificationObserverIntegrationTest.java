@@ -53,6 +53,13 @@ class NotificationObserverIntegrationTest extends IntegrationTestBase {
 
         String listingId = extractStringField(body, "id");
 
+        // Upload du ticket PDF requis avant certification
+        org.springframework.mock.web.MockMultipartFile file = new org.springframework.mock.web.MockMultipartFile("file", "proof.pdf", "application/pdf", "ok".getBytes());
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart("/api/listings/{id}/attachments", listingId)
+                .file(file)
+                .with(bearer(sellerToken)))
+            .andExpect(status().isCreated());
+
         mockMvc.perform(post("/api/certification/{id}/certify", listingId)
                 .with(bearer(controllerToken)))
             .andExpect(status().isOk());
@@ -150,6 +157,13 @@ class NotificationObserverIntegrationTest extends IntegrationTestBase {
 
         String listingId = extractStringField(body, "id");
 
+        // Upload du ticket PDF requis avant certification
+        org.springframework.mock.web.MockMultipartFile file = new org.springframework.mock.web.MockMultipartFile("file", "proof.pdf", "application/pdf", "ok".getBytes());
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart("/api/listings/{id}/attachments", listingId)
+                .file(file)
+                .with(bearer(sellerToken)))
+            .andExpect(status().isCreated());
+
         mockMvc.perform(post("/api/certification/{id}/certify", listingId)
                 .with(bearer(controllerToken)))
             .andExpect(status().isOk());
@@ -190,6 +204,13 @@ class NotificationObserverIntegrationTest extends IntegrationTestBase {
             .getContentAsString();
 
         String listingId = extractStringField(body, "id");
+
+        // Upload du ticket PDF requis avant certification
+        org.springframework.mock.web.MockMultipartFile file = new org.springframework.mock.web.MockMultipartFile("file", "proof.pdf", "application/pdf", "ok".getBytes());
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart("/api/listings/{id}/attachments", listingId)
+                .file(file)
+                .with(bearer(sellerToken)))
+            .andExpect(status().isCreated());
 
         mockMvc.perform(post("/api/certification/{id}/certify", listingId)
                 .with(bearer(controllerToken)))

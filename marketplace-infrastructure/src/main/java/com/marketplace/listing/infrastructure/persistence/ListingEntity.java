@@ -28,6 +28,9 @@ public class ListingEntity {
     @Column(name = "status", nullable = false)
     private String status;
 
+    @Column(name = "has_ticket_attachment", nullable = false)
+    private boolean hasTicketAttachment;
+
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
     public String getEventId() { return eventId; }
@@ -40,4 +43,6 @@ public class ListingEntity {
     public void setCurrency(String currency) { this.currency = currency; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public boolean isHasTicketAttachment() { return hasTicketAttachment; }
+    public void setHasTicketAttachment(boolean hasTicketAttachment) { this.hasTicketAttachment = hasTicketAttachment; }
 }

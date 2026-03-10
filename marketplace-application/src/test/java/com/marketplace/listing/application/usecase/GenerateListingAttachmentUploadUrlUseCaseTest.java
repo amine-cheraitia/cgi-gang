@@ -37,7 +37,7 @@ class GenerateListingAttachmentUploadUrlUseCaseTest {
 
     @Test
     void shouldGeneratePresignedUrlWhenSupported() {
-        Listing listing = Listing.rehydrate("lst_1", new ExternalEventId("evt_1"), "seller_1", Money.euros(80), ListingStatus.PENDING_CERTIFICATION);
+        Listing listing = Listing.rehydrate("lst_1", new ExternalEventId("evt_1"), "seller_1", Money.euros(80), ListingStatus.PENDING_CERTIFICATION, false);
         when(listingRepository.findById("lst_1")).thenReturn(Optional.of(listing));
         when(objectStorage.presignUpload(org.mockito.ArgumentMatchers.contains("listings/lst_1/"), eq("application/pdf"), anyLong()))
             .thenReturn(new ObjectStorage.PresignedUpload("k", URI.create("https://upload.local/k"), "PUT", 900));
@@ -50,7 +50,7 @@ class GenerateListingAttachmentUploadUrlUseCaseTest {
 
     @Test
     void shouldReturnErrorWhenPresignNotSupported() {
-        Listing listing = Listing.rehydrate("lst_1", new ExternalEventId("evt_1"), "seller_1", Money.euros(80), ListingStatus.PENDING_CERTIFICATION);
+        Listing listing = Listing.rehydrate("lst_1", new ExternalEventId("evt_1"), "seller_1", Money.euros(80), ListingStatus.PENDING_CERTIFICATION, false);
         when(listingRepository.findById("lst_1")).thenReturn(Optional.of(listing));
         when(objectStorage.presignUpload(org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anyString(), anyLong()))
             .thenThrow(new UnsupportedOperationException("Presigned upload not supported"));

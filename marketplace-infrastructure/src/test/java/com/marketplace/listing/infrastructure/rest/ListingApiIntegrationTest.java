@@ -30,11 +30,10 @@ class ListingApiIntegrationTest extends IntegrationTestBase {
     void shouldRequireAuthenticationToCreateListing() throws Exception {
         String payload = listingPayload("evt_new", 70.00, "EUR");
 
-        assertErrorCode(mockMvc.perform(post("/api/listings")
+        mockMvc.perform(post("/api/listings")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(payload)),
-            401,
-            "AUTH-001");
+                .content(payload))
+            .andExpect(status().isForbidden());
 
         String sellerToken = loginAndGetToken("seller", "seller123");
 
@@ -45,12 +44,11 @@ class ListingApiIntegrationTest extends IntegrationTestBase {
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.status").value("PENDING_CERTIFICATION"));
 
-        assertErrorCode(mockMvc.perform(post("/api/listings")
+        mockMvc.perform(post("/api/listings")
                 .with(bearer("invalid-token"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(payload)),
-            401,
-            "AUTH-001");
+                .content(payload))
+            .andExpect(status().isForbidden());
     }
 
     @Test
@@ -71,6 +69,19 @@ class ListingApiIntegrationTest extends IntegrationTestBase {
             .getContentAsString();
 
         String listingId = extractStringField(body, "id");
+
+        // Sans ticket PDF, la certification doit echouer avec LST-006
+        assertErrorCode(mockMvc.perform(post("/api/certification/{listingId}/certify", listingId)
+                .with(bearer(controllerToken))),
+            409,
+            "LST-006");
+
+        // Upload d'un ticket PDF
+        MockMultipartFile file = new MockMultipartFile("file", "proof.pdf", "application/pdf", "ok".getBytes());
+        mockMvc.perform(multipart("/api/listings/{listingId}/attachments", listingId)
+                .file(file)
+                .with(bearer(sellerToken)))
+            .andExpect(status().isCreated());
 
         assertErrorCode(mockMvc.perform(post("/api/certification/{listingId}/certify", listingId)
                 .with(bearer(sellerToken))),

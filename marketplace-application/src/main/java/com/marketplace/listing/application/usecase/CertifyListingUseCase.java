@@ -30,6 +30,9 @@ public class CertifyListingUseCase {
     public Listing execute(String listingId) {
         Listing listing = listingRepository.findById(listingId)
             .orElseThrow(() -> new BusinessException(ErrorCode.LISTING_NOT_FOUND));
+        if (!listing.hasTicketAttachment()) {
+            throw new BusinessException(ErrorCode.LISTING_MISSING_TICKET_ATTACHMENT);
+        }
         listing.certify();
         Listing saved = listingRepository.save(listing);
 

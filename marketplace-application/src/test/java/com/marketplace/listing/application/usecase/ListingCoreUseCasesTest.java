@@ -69,7 +69,8 @@ class ListingCoreUseCasesTest {
             new ExternalEventId("evt-1"),
             "seller-1",
             Money.euros(65),
-            ListingStatus.PENDING_CERTIFICATION
+            ListingStatus.PENDING_CERTIFICATION,
+            true
         );
         WaitlistSubscription firstInLine = WaitlistSubscription.rehydrate(
             "w-1", "evt-1", "buyer-1",
@@ -98,7 +99,8 @@ class ListingCoreUseCasesTest {
             new ExternalEventId("evt-1"),
             "seller-1",
             Money.euros(65),
-            ListingStatus.PENDING_CERTIFICATION
+            ListingStatus.PENDING_CERTIFICATION,
+            true
         );
         when(listingRepository.findById("listing-1")).thenReturn(Optional.of(listing));
         when(listingRepository.save(any(Listing.class))).thenAnswer(inv -> inv.getArgument(0));

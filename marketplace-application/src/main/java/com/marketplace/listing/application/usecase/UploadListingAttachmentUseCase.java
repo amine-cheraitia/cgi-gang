@@ -33,11 +33,16 @@ public class UploadListingAttachmentUseCase {
         if (content == null || content.length == 0) {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Attachment file is required");
         }
+        String safeContentType = (contentType == null || contentType.isBlank()) ? "application/octet-stream" : contentType;
+        if (!safeContentType.equalsIgnoreCase("application/pdf")) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Seuls les fichiers PDF sont autorises pour les billets");
+        }
 
         String safeName = sanitizeFilename(originalFilename);
         String key = "listings/" + listingId + "/" + UUID.randomUUID() + "-" + safeName;
-        String safeContentType = (contentType == null || contentType.isBlank()) ? "application/octet-stream" : contentType;
         ObjectStorage.StoredObject storedObject = objectStorage.store(key, content, safeContentType);
+        listing.markTicketAttached();
+        listingRepository.save(listing);
         return new UploadedAttachment(storedObject.key(), storedObject.uri().toString());
     }
 

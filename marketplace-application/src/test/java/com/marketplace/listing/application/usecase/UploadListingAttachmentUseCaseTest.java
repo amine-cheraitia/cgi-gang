@@ -35,7 +35,7 @@ class UploadListingAttachmentUseCaseTest {
 
     @Test
     void shouldUploadAttachmentForListingOwner() {
-        Listing listing = Listing.rehydrate("lst_1", new ExternalEventId("evt_1"), "seller_1", Money.euros(50), com.marketplace.listing.domain.model.ListingStatus.PENDING_CERTIFICATION);
+        Listing listing = Listing.rehydrate("lst_1", new ExternalEventId("evt_1"), "seller_1", Money.euros(50), com.marketplace.listing.domain.model.ListingStatus.PENDING_CERTIFICATION, false);
         when(listingRepository.findById("lst_1")).thenReturn(Optional.of(listing));
         when(objectStorage.store(any(), any(), any())).thenAnswer(invocation -> {
             String key = invocation.getArgument(0);
@@ -52,7 +52,7 @@ class UploadListingAttachmentUseCaseTest {
 
     @Test
     void shouldRejectUploadForDifferentSeller() {
-        Listing listing = Listing.rehydrate("lst_1", new ExternalEventId("evt_1"), "seller_1", Money.euros(50), com.marketplace.listing.domain.model.ListingStatus.PENDING_CERTIFICATION);
+        Listing listing = Listing.rehydrate("lst_1", new ExternalEventId("evt_1"), "seller_1", Money.euros(50), com.marketplace.listing.domain.model.ListingStatus.PENDING_CERTIFICATION, false);
         when(listingRepository.findById("lst_1")).thenReturn(Optional.of(listing));
 
         assertThatThrownBy(() -> useCase.execute("lst_1", "seller_2", "proof.pdf", "application/pdf", new byte[]{1}))

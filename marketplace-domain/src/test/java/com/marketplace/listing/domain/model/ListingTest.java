@@ -57,14 +57,16 @@ class ListingTest {
             new ExternalEventId("evt-1"),
             "seller-1",
             Money.euros(20),
-            ListingStatus.SOLD
+            ListingStatus.SOLD,
+            true
         );
         Listing sameIdDifferentValues = Listing.rehydrate(
             "lst-1",
             new ExternalEventId("evt-2"),
             "seller-2",
             Money.euros(80),
-            ListingStatus.PENDING_CERTIFICATION
+            ListingStatus.PENDING_CERTIFICATION,
+            false
         );
 
         assertThat(sold.isPubliclyVisible()).isTrue();

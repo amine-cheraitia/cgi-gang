@@ -175,14 +175,15 @@ Tu dois voir ton annonce avec le statut `CERTIFIED`. Tu peux utiliser son `id` p
 
 Par défaut dans la démo, le stockage est configuré en **mode local** (`storage.provider=local`) :
 
-- l’endpoint **upload direct** fonctionne :
+- l’endpoint **upload direct** est **obligatoire** pour qu’une annonce puisse être certifiée.  
+  Le fichier doit être un **PDF** (le backend refuse les autres types).
 
 ```http
 POST http://localhost:8080/api/listings/{listingId}/attachments
 Authorization: Bearer <JWT seller>
 Content-Type: multipart/form-data
 
-file = <ton_fichier_pdf_ou_jpg>
+file = <ton_fichier_pdf>
 ```
 
 - l’endpoint de **presign** (`POST /api/listings/{listingId}/attachments/presign`) renvoie volontairement une erreur métier `LST-005` (presign non disponible) tant que le provider n’est pas S3.

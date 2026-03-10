@@ -5,7 +5,6 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.security.Key;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -14,7 +13,7 @@ import java.util.List;
 @Service
 public class JwtService {
 
-    private final Key signingKey;
+    private final javax.crypto.SecretKey signingKey;
     private final long expirationMinutes;
 
     public JwtService(

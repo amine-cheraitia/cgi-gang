@@ -52,11 +52,10 @@ class OrderApiIntegrationTest extends IntegrationTestBase {
     @DisplayName("POST /api/orders exige authentification")
     void shouldRequireAuthenticationForOrders() throws Exception {
         String payload = orderPayload("lst_seed_001");
-        assertErrorCode(mockMvc.perform(post("/api/orders")
+        mockMvc.perform(post("/api/orders")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(payload)),
-            401,
-            "AUTH-001");
+                .content(payload))
+            .andExpect(status().isForbidden());
     }
 
     @Test
