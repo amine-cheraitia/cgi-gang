@@ -5,6 +5,7 @@ import com.marketplace.sales.application.usecase.MarkOrderPaidUseCase;
 import com.marketplace.sales.application.usecase.PlaceOrderUseCase;
 import com.marketplace.sales.infrastructure.rest.dto.OrderResponse;
 import com.marketplace.sales.infrastructure.rest.dto.PlaceOrderRequest;
+import com.marketplace.user.infrastructure.service.CurrentUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -24,20 +25,24 @@ public class OrderController {
     private final PlaceOrderUseCase placeOrderUseCase;
     private final GetOrderUseCase getOrderUseCase;
     private final MarkOrderPaidUseCase markOrderPaidUseCase;
+    private final CurrentUserService currentUserService;
 
     public OrderController(PlaceOrderUseCase placeOrderUseCase,
                            GetOrderUseCase getOrderUseCase,
-                           MarkOrderPaidUseCase markOrderPaidUseCase) {
+                           MarkOrderPaidUseCase markOrderPaidUseCase,
+                           CurrentUserService currentUserService) {
         this.placeOrderUseCase = placeOrderUseCase;
         this.getOrderUseCase = getOrderUseCase;
         this.markOrderPaidUseCase = markOrderPaidUseCase;
+        this.currentUserService = currentUserService;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Creer une commande", description = "Cree une commande a partir d'un listing certifie.")
     public OrderResponse placeOrder(@Valid @RequestBody PlaceOrderRequest request) {
-        return OrderResponse.from(placeOrderUseCase.execute(request.listingId(), request.buyerId()));
+        String buyerId = currentUserService.getCurrentUserId();
+        return OrderResponse.from(placeOrderUseCase.execute(request.listingId(), buyerId));
     }
 
     @GetMapping("/{orderId}")

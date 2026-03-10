@@ -9,17 +9,17 @@
         <insert tableName="users">
             <column name="id" value="seller-seed-1"/>
             <column name="username" value="seller"/>
-            <column name="role" value="SELLER"/>
+            <column name="role" value="CLIENT"/>
         </insert>
         <insert tableName="users">
             <column name="id" value="seller-seed-2"/>
             <column name="username" value="seller2"/>
-            <column name="role" value="SELLER"/>
+            <column name="role" value="CLIENT"/>
         </insert>
         <insert tableName="users">
             <column name="id" value="buyer-seed-1"/>
             <column name="username" value="buyer"/>
-            <column name="role" value="BUYER"/>
+            <column name="role" value="CLIENT"/>
         </insert>
         <insert tableName="users">
             <column name="id" value="controller-seed-1"/>

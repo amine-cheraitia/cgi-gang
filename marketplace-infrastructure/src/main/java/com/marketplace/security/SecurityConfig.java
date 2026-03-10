@@ -7,28 +7,34 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
 
 @Configuration
 public class SecurityConfig {
     private final ObjectMapper objectMapper;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(ObjectMapper objectMapper) {
+    public SecurityConfig(ObjectMapper objectMapper, JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.objectMapper = objectMapper;
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/admin/login").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/listings").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/events/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/files/**").permitAll()
@@ -36,28 +42,25 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/v3/api-docs/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/swagger-ui/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/swagger-ui.html").permitAll()
-                .requestMatchers("/api/listings/**").hasRole("SELLER")
-                .requestMatchers(HttpMethod.POST, "/api/listings").hasRole("SELLER")
+                // Tout utilisateur authentifié peut créer/vendre/acheter
+                .requestMatchers("/api/listings/**").authenticated()
                 .requestMatchers("/api/certification/**").hasRole("CONTROLLER")
-                .requestMatchers(HttpMethod.POST, "/api/orders").hasRole("BUYER")
+                .requestMatchers(HttpMethod.POST, "/api/orders").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/orders/*/pay").hasRole("CONTROLLER")
                 .requestMatchers(HttpMethod.POST, "/api/payments/webhooks").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/orders/**").authenticated()
-                .requestMatchers(HttpMethod.POST, "/api/waitlist/subscriptions").hasRole("BUYER")
-                .requestMatchers(HttpMethod.DELETE, "/api/waitlist/subscriptions").hasRole("BUYER")
+                .requestMatchers(HttpMethod.POST, "/api/waitlist/subscriptions").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/waitlist/subscriptions").authenticated()
                 .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex
                 .accessDeniedHandler((request, response, accessDeniedException) ->
                     writeError(response, ErrorCode.ACCESS_DENIED))
             )
-            .httpBasic(httpBasic -> httpBasic.authenticationEntryPoint((request, response, authException) -> {
-                if (authException instanceof BadCredentialsException) {
-                    writeError(response, ErrorCode.AUTH_BAD_CREDENTIALS);
-                    return;
-                }
-                writeError(response, ErrorCode.AUTH_REQUIRED);
-            }));
+            .httpBasic(httpBasic -> httpBasic.disable());
+
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 

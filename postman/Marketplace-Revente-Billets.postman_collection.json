@@ -14,17 +14,16 @@
           "name": "1. Create listing (SELLER)",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
-                { "key": "username", "value": "{{sellerUsername}}", "type": "string" },
-                { "key": "password", "value": "{{sellerPassword}}", "type": "string" }
-              ]
+              "type": "noauth"
             },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwtSeller}}", "type": "text" }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"eventId\": \"{{eventId}}\",\n  \"sellerId\": \"{{sellerId}}\",\n  \"price\": 89.00,\n  \"currency\": \"EUR\"\n}"
+              "raw": "{\n  \"eventId\": \"{{eventId}}\",\n  \"price\": 89.00,\n  \"currency\": \"EUR\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/listings",
@@ -83,17 +82,16 @@
           "name": "3. Place order (BUYER)",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
-                { "key": "username", "value": "{{buyerUsername}}", "type": "string" },
-                { "key": "password", "value": "{{buyerPassword}}", "type": "string" }
-              ]
+              "type": "noauth"
             },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwtBuyer}}", "type": "text" }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"listingId\": \"{{listingId}}\",\n  \"buyerId\": \"{{buyerId}}\"\n}"
+              "raw": "{\n  \"listingId\": \"{{listingId}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/orders",
@@ -120,14 +118,12 @@
           "name": "4. Get order",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
-                { "key": "username", "value": "{{buyerUsername}}", "type": "string" },
-                { "key": "password", "value": "{{buyerPassword}}", "type": "string" }
-              ]
+              "type": "noauth"
             },
             "method": "GET",
-            "header": [],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtBuyer}}", "type": "text" }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/orders/{{orderId}}",
               "host": ["{{baseUrl}}"],
@@ -215,6 +211,108 @@
       ]
     },
     {
+      "name": "00 - Auth",
+      "item": [
+        {
+          "name": "Register (create user)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"newuser\",\n  \"email\": \"newuser@example.com\",\n  \"password\": \"Secret123!\",\n  \"role\": \"SELLER\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login SELLER",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{sellerUsername}}\",\n  \"password\": \"{{sellerPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('jwtSeller', json.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login BUYER",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{buyerUsername}}\",\n  \"password\": \"{{buyerPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('jwtBuyer', json.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Me (JWT)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtSeller}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "00 - Docs & Dev",
       "item": [
         {
@@ -292,17 +390,16 @@
           "name": "Create listing (SELLER)",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
-                { "key": "username", "value": "{{sellerUsername}}", "type": "string" },
-                { "key": "password", "value": "{{sellerPassword}}", "type": "string" }
-              ]
+              "type": "noauth"
             },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwtSeller}}", "type": "text" }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"eventId\": \"{{eventId}}\",\n  \"sellerId\": \"{{sellerId}}\",\n  \"price\": 85.00,\n  \"currency\": \"EUR\"\n}"
+              "raw": "{\n  \"eventId\": \"{{eventId}}\",\n  \"price\": 85.00,\n  \"currency\": \"EUR\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/listings",
@@ -348,18 +445,15 @@
           "name": "Upload attachment (SELLER)",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
-                { "key": "username", "value": "{{sellerUsername}}", "type": "string" },
-                { "key": "password", "value": "{{sellerPassword}}", "type": "string" }
-              ]
+              "type": "noauth"
             },
             "method": "POST",
-            "header": [],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtSeller}}", "type": "text" }
+            ],
             "body": {
               "mode": "formdata",
               "formdata": [
-                { "key": "sellerId", "value": "{{sellerId}}", "type": "text" },
                 { "key": "file", "type": "file", "src": "" }
               ]
             },
@@ -374,17 +468,16 @@
           "name": "Presign attachment upload (SELLER)",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
-                { "key": "username", "value": "{{sellerUsername}}", "type": "string" },
-                { "key": "password", "value": "{{sellerPassword}}", "type": "string" }
-              ]
+              "type": "noauth"
             },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwtSeller}}", "type": "text" }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"sellerId\": \"{{sellerId}}\",\n  \"filename\": \"proof.pdf\",\n  \"contentType\": \"application/pdf\"\n}"
+              "raw": "{\n  \"filename\": \"proof.pdf\",\n  \"contentType\": \"application/pdf\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/listings/{{listingId}}/attachments/presign",
@@ -402,17 +495,16 @@
           "name": "Place order (BUYER)",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
-                { "key": "username", "value": "{{buyerUsername}}", "type": "string" },
-                { "key": "password", "value": "{{buyerPassword}}", "type": "string" }
-              ]
+              "type": "noauth"
             },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwtBuyer}}", "type": "text" }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"listingId\": \"{{listingId}}\",\n  \"buyerId\": \"{{buyerId}}\"\n}"
+              "raw": "{\n  \"listingId\": \"{{listingId}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/orders",
@@ -439,14 +531,12 @@
           "name": "Get order",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
-                { "key": "username", "value": "{{buyerUsername}}", "type": "string" },
-                { "key": "password", "value": "{{buyerPassword}}", "type": "string" }
-              ]
+              "type": "noauth"
             },
             "method": "GET",
-            "header": [],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtBuyer}}", "type": "text" }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/orders/{{orderId}}",
               "host": ["{{baseUrl}}"],
@@ -482,17 +572,16 @@
           "name": "Subscribe waitlist (BUYER)",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
-                { "key": "username", "value": "{{buyerUsername}}", "type": "string" },
-                { "key": "password", "value": "{{buyerPassword}}", "type": "string" }
-              ]
+              "type": "noauth"
             },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwtBuyer}}", "type": "text" }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"eventId\": \"{{eventId}}\",\n  \"userId\": \"{{buyerId}}\"\n}"
+              "raw": "{\n  \"eventId\": \"{{eventId}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/waitlist/subscriptions",
@@ -505,21 +594,18 @@
           "name": "Unsubscribe waitlist (BUYER)",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
-                { "key": "username", "value": "{{buyerUsername}}", "type": "string" },
-                { "key": "password", "value": "{{buyerPassword}}", "type": "string" }
-              ]
+              "type": "noauth"
             },
             "method": "DELETE",
-            "header": [],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtBuyer}}", "type": "text" }
+            ],
             "url": {
-              "raw": "{{baseUrl}}/api/waitlist/subscriptions?eventId={{eventId}}&userId={{buyerId}}",
+              "raw": "{{baseUrl}}/api/waitlist/subscriptions?eventId={{eventId}}",
               "host": ["{{baseUrl}}"],
               "path": ["api", "waitlist", "subscriptions"],
               "query": [
-                { "key": "eventId", "value": "{{eventId}}" },
-                { "key": "userId", "value": "{{buyerId}}" }
+                { "key": "eventId", "value": "{{eventId}}" }
               ]
             }
           }
@@ -554,8 +640,6 @@
   "variable": [
     { "key": "baseUrl",           "value": "http://localhost:8080" },
     { "key": "eventId",           "value": "evt_taylor_paris" },
-    { "key": "sellerId",          "value": "seller-seed-1" },
-    { "key": "buyerId",           "value": "buyer-seed-1" },
     { "key": "listingId",         "value": "lst_seed_001" },
     { "key": "orderId",           "value": "" },
     { "key": "sellerUsername",    "value": "seller" },
@@ -564,6 +648,9 @@
     { "key": "buyerPassword",     "value": "buyer123" },
     { "key": "controllerUsername","value": "controller" },
     { "key": "controllerPassword","value": "controller123" },
-    { "key": "paymentWebhookToken","value": "change-me" }
+    { "key": "paymentWebhookToken","value": "change-me" },
+    { "key": "jwtSeller",         "value": "" },
+    { "key": "jwtBuyer",          "value": "" }
   ]
 }
+

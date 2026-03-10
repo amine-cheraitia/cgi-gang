@@ -89,6 +89,23 @@ class EmailTemplateStrategyTest {
     }
 
     @Test
+    void controllerListingsPendingTemplateShouldInjectPlaceholders() {
+        ControllerListingsPendingTemplateStrategy strategy = new ControllerListingsPendingTemplateStrategy();
+        NotificationCommand command = new NotificationCommand(
+            "controller@marketplace.local",
+            "controller",
+            NotificationEventType.CONTROLLER_LISTINGS_PENDING,
+            Map.of("eventId", "evt_taylor_paris", "listingId", "lst_123")
+        );
+
+        EmailMessage message = strategy.build(command);
+
+        assertThat(message.subject()).contains("annonces");
+        assertThat(message.body()).contains("evt_taylor_paris");
+        assertThat(message.body()).contains("lst_123");
+    }
+
+    @Test
     void orderPlacedTemplateShouldRejectMissingPayload() {
         OrderPlacedTemplateStrategy strategy = new OrderPlacedTemplateStrategy();
         NotificationCommand command = new NotificationCommand(

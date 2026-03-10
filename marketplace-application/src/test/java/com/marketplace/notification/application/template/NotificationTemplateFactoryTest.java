@@ -15,7 +15,8 @@ class NotificationTemplateFactoryTest {
             new ListingCertifiedTemplateStrategy(),
             new OrderPlacedTemplateStrategy(),
             new OrderPaidTemplateStrategy(),
-            new WaitlistAvailableTemplateStrategy()
+            new WaitlistAvailableTemplateStrategy(),
+            new ControllerListingsPendingTemplateStrategy()
         ));
 
         EmailTemplateStrategy strategy = factory.resolve(NotificationEventType.ORDER_PLACED);

@@ -17,30 +17,33 @@ class WaitlistApiIntegrationTest extends IntegrationTestBase {
     @Test
     @DisplayName("POST /api/waitlist/subscriptions inscrit un buyer")
     void shouldSubscribeBuyerToWaitlist() throws Exception {
-        String payload = waitlistPayload("evt_waitlist_001", "buyer-seed-1");
+        String payload = waitlistPayload("evt_waitlist_001");
+
+        String buyerToken = loginAndGetToken("buyer", "buyer123");
 
         mockMvc.perform(post("/api/waitlist/subscriptions")
-                .with(buyerAuth())
+                .with(bearer(buyerToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.eventId").value("evt_waitlist_001"))
-            .andExpect(jsonPath("$.userId").value("buyer-seed-1"));
+            .andExpect(jsonPath("$.eventId").value("evt_waitlist_001"));
     }
 
     @Test
     @DisplayName("POST /api/waitlist/subscriptions refuse un doublon")
     void shouldRejectDuplicateWaitlistSubscription() throws Exception {
-        String payload = waitlistPayload("evt_waitlist_dup", "buyer-seed-1");
+        String payload = waitlistPayload("evt_waitlist_dup");
+
+        String buyerToken = loginAndGetToken("buyer", "buyer123");
 
         mockMvc.perform(post("/api/waitlist/subscriptions")
-                .with(buyerAuth())
+                .with(bearer(buyerToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isCreated());
 
         assertErrorCode(mockMvc.perform(post("/api/waitlist/subscriptions")
-                .with(buyerAuth())
+                .with(bearer(buyerToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload)),
             409,
@@ -50,28 +53,30 @@ class WaitlistApiIntegrationTest extends IntegrationTestBase {
     @Test
     @DisplayName("DELETE /api/waitlist/subscriptions desinscrit un buyer")
     void shouldUnsubscribeBuyerFromWaitlist() throws Exception {
-        String payload = waitlistPayload("evt_waitlist_unsub", "buyer-seed-1");
+        String payload = waitlistPayload("evt_waitlist_unsub");
+
+        String buyerToken = loginAndGetToken("buyer", "buyer123");
 
         mockMvc.perform(post("/api/waitlist/subscriptions")
-                .with(buyerAuth())
+                .with(bearer(buyerToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isCreated());
 
         mockMvc.perform(delete("/api/waitlist/subscriptions")
-                .with(buyerAuth())
-                .param("eventId", "evt_waitlist_unsub")
-                .param("userId", "buyer-seed-1"))
+                .with(bearer(buyerToken))
+                .param("eventId", "evt_waitlist_unsub"))
             .andExpect(status().isNoContent());
     }
 
     @Test
     @DisplayName("DELETE /api/waitlist/subscriptions retourne WAI-001 si abonnement absent")
     void shouldReturnNotFoundWhenUnsubscribeMissingSubscription() throws Exception {
+        String buyerToken = loginAndGetToken("buyer", "buyer123");
+
         assertErrorCode(mockMvc.perform(delete("/api/waitlist/subscriptions")
-                .with(buyerAuth())
-                .param("eventId", "evt_unknown")
-                .param("userId", "buyer-seed-1")),
+                .with(bearer(buyerToken))
+                .param("eventId", "evt_unknown")),
             404,
             "WAI-001");
     }
@@ -79,8 +84,10 @@ class WaitlistApiIntegrationTest extends IntegrationTestBase {
     @Test
     @DisplayName("DELETE /api/waitlist/subscriptions valide la presence des params")
     void shouldValidateUnsubscribeRequestParams() throws Exception {
+        String buyerToken = loginAndGetToken("buyer", "buyer123");
+
         assertErrorCode(mockMvc.perform(delete("/api/waitlist/subscriptions")
-                .with(buyerAuth())
+                .with(bearer(buyerToken))
                 .param("eventId", "evt_waitlist_validation")),
             400,
             "GEN-001");

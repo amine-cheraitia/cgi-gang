@@ -16,10 +16,12 @@ class OrderApiIntegrationTest extends IntegrationTestBase {
     @Test
     @DisplayName("POST /api/orders cree une commande avec pricing complet")
     void shouldCreateOrderWithPricing() throws Exception {
-        String payload = orderPayload("lst_seed_001", "buyer-seed-1");
+        String payload = orderPayload("lst_seed_001");
+
+        String buyerToken = loginAndGetToken("buyer", "buyer123");
 
         mockMvc.perform(post("/api/orders")
-                .with(buyerAuth())
+                .with(bearer(buyerToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isCreated())
@@ -35,9 +37,11 @@ class OrderApiIntegrationTest extends IntegrationTestBase {
     @Test
     @DisplayName("POST /api/orders refuse un listing non certifie")
     void shouldRejectIfListingIsNotCertified() throws Exception {
-        String payload = orderPayload("lst_seed_002", "buyer-seed-1");
+        String payload = orderPayload("lst_seed_002");
+
+        String buyerToken = loginAndGetToken("buyer", "buyer123");
         assertErrorCode(mockMvc.perform(post("/api/orders")
-                .with(buyerAuth())
+                .with(bearer(buyerToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload)),
             409,
@@ -45,24 +49,26 @@ class OrderApiIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    @DisplayName("POST /api/orders exige role BUYER")
-    void shouldRequireBuyerRole() throws Exception {
-        String payload = orderPayload("lst_seed_001", "buyer-seed-1");
+    @DisplayName("POST /api/orders exige authentification")
+    void shouldRequireAuthenticationForOrders() throws Exception {
+        String payload = orderPayload("lst_seed_001");
         assertErrorCode(mockMvc.perform(post("/api/orders")
-                .with(sellerAuth())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload)),
-            403,
-            "AUTH-003");
+            401,
+            "AUTH-001");
     }
 
     @Test
     @DisplayName("POST /api/orders/{id}/pay confirme le paiement")
     void shouldMarkOrderAsPaid() throws Exception {
-        String payload = orderPayload("lst_seed_001", "buyer-seed-1");
+        String payload = orderPayload("lst_seed_001");
+
+        String buyerToken = loginAndGetToken("buyer", "buyer123");
+        String controllerToken = loginAndGetToken("controller", "controller123");
 
         String orderBody = mockMvc.perform(post("/api/orders")
-                .with(buyerAuth())
+                .with(bearer(buyerToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isCreated())
@@ -73,7 +79,7 @@ class OrderApiIntegrationTest extends IntegrationTestBase {
         String orderId = extractStringField(orderBody, "orderId");
 
         mockMvc.perform(post("/api/orders/{orderId}/pay", orderId)
-                .with(controllerAuth()))
+                .with(bearer(controllerToken)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("PAID"));
     }
@@ -81,10 +87,12 @@ class OrderApiIntegrationTest extends IntegrationTestBase {
     @Test
     @DisplayName("POST /api/orders/{id}/pay exige role CONTROLLER")
     void shouldRequireControllerRoleToMarkPaid() throws Exception {
-        String payload = orderPayload("lst_seed_001", "buyer-seed-1");
+        String payload = orderPayload("lst_seed_001");
+
+        String buyerToken = loginAndGetToken("buyer", "buyer123");
 
         String orderBody = mockMvc.perform(post("/api/orders")
-                .with(buyerAuth())
+                .with(bearer(buyerToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isCreated())
@@ -95,7 +103,7 @@ class OrderApiIntegrationTest extends IntegrationTestBase {
         String orderId = extractStringField(orderBody, "orderId");
 
         assertErrorCode(mockMvc.perform(post("/api/orders/{orderId}/pay", orderId)
-                .with(buyerAuth())),
+                .with(bearer(buyerToken))),
             403,
             "AUTH-003");
     }
@@ -103,10 +111,13 @@ class OrderApiIntegrationTest extends IntegrationTestBase {
     @Test
     @DisplayName("POST /api/orders/{id}/pay refuse un paiement deja confirme")
     void shouldRejectAlreadyPaidOrder() throws Exception {
-        String payload = orderPayload("lst_seed_001", "buyer-seed-1");
+        String payload = orderPayload("lst_seed_001");
+
+        String buyerToken = loginAndGetToken("buyer", "buyer123");
+        String controllerToken = loginAndGetToken("controller", "controller123");
 
         String orderBody = mockMvc.perform(post("/api/orders")
-                .with(buyerAuth())
+                .with(bearer(buyerToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isCreated())
@@ -117,11 +128,11 @@ class OrderApiIntegrationTest extends IntegrationTestBase {
         String orderId = extractStringField(orderBody, "orderId");
 
         mockMvc.perform(post("/api/orders/{orderId}/pay", orderId)
-                .with(controllerAuth()))
+                .with(bearer(controllerToken)))
             .andExpect(status().isOk());
 
         assertErrorCode(mockMvc.perform(post("/api/orders/{orderId}/pay", orderId)
-                .with(controllerAuth()))
+                .with(bearer(controllerToken)))
             ,
             409,
             "ORD-002");

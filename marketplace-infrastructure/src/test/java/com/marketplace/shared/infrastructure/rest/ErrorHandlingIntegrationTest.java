@@ -15,10 +15,12 @@ class ErrorHandlingIntegrationTest extends IntegrationTestBase {
     @Test
     @DisplayName("Doit retourner un code d'erreur metier stable si listing inexistant")
     void shouldReturnStableErrorCodeForMissingListing() throws Exception {
-        String payload = orderPayload("does-not-exist", "buyer-seed-1");
+        String payload = orderPayload("does-not-exist");
+
+        String buyerToken = loginAndGetToken("buyer", "buyer123");
 
         assertErrorCode(mockMvc.perform(post("/api/orders")
-                .with(buyerAuth())
+                .with(bearer(buyerToken))
                 .contentType("application/json")
                 .content(payload)),
             404,

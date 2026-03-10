@@ -55,6 +55,12 @@ ticketmaster:
   api-key: ${TICKETMASTER_API_KEY:}
   base-url: https://app.ticketmaster.com/discovery/v2
 
+security:
+  jwt:
+    # Clé de démo pour le POC (à surcharger via variable d'environnement en prod)
+    secret: ${JWT_SECRET:change-me-please-change-me-please-change-me-123456}
+    expiration-minutes: 60
+
 springdoc:
   api-docs:
     enabled: true

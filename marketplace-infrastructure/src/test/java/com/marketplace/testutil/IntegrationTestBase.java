@@ -6,10 +6,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -22,20 +24,26 @@ public abstract class IntegrationTestBase {
     @Autowired
     protected ObjectMapper objectMapper;
 
-    protected RequestPostProcessor sellerAuth() {
-        return SecurityMockMvcRequestPostProcessors.httpBasic("seller", "seller123");
+    protected String loginAndGetToken(String username, String password) throws Exception {
+        String body = mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "username":"%s",
+                      "password":"%s"
+                    }
+                    """.formatted(username, password)))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+        return extractStringField(body, "token");
     }
 
-    protected RequestPostProcessor buyerAuth() {
-        return SecurityMockMvcRequestPostProcessors.httpBasic("buyer", "buyer123");
-    }
-
-    protected RequestPostProcessor controllerAuth() {
-        return SecurityMockMvcRequestPostProcessors.httpBasic("controller", "controller123");
-    }
-
-    protected RequestPostProcessor invalidSellerAuth() {
-        return SecurityMockMvcRequestPostProcessors.httpBasic("seller", "wrong-password");
+    protected RequestPostProcessor bearer(String token) {
+        return request -> {
+            request.addHeader("Authorization", "Bearer " + token);
+            return request;
+        };
     }
 
     protected String extractStringField(String jsonBody, String fieldName) throws JsonProcessingException {

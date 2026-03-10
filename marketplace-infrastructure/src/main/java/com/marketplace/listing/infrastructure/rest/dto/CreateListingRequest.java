@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 
 public record CreateListingRequest(
     @NotBlank String eventId,
-    @NotBlank String sellerId,
     @NotNull @DecimalMin("0.0") BigDecimal price,
     @NotBlank String currency
 ) {

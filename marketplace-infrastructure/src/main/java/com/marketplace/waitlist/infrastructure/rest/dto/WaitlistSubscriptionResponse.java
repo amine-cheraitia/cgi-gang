@@ -7,14 +7,12 @@ import java.time.OffsetDateTime;
 public record WaitlistSubscriptionResponse(
     String id,
     String eventId,
-    String userId,
     OffsetDateTime createdAt
 ) {
     public static WaitlistSubscriptionResponse from(WaitlistSubscription subscription) {
         return new WaitlistSubscriptionResponse(
             subscription.getId(),
             subscription.getEventId(),
-            subscription.getUserId(),
             subscription.getCreatedAt()
         );
     }

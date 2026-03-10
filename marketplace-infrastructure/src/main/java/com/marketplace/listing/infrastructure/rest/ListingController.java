@@ -9,6 +9,7 @@ import com.marketplace.listing.infrastructure.rest.dto.CreateListingRequest;
 import com.marketplace.listing.infrastructure.rest.dto.GenerateAttachmentUploadUrlRequest;
 import com.marketplace.listing.infrastructure.rest.dto.ListingAttachmentResponse;
 import com.marketplace.listing.infrastructure.rest.dto.ListingResponse;
+import com.marketplace.user.infrastructure.service.CurrentUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -35,24 +36,28 @@ public class ListingController {
     private final ListPublicListingsUseCase listPublicListingsUseCase;
     private final UploadListingAttachmentUseCase uploadListingAttachmentUseCase;
     private final GenerateListingAttachmentUploadUrlUseCase generateListingAttachmentUploadUrlUseCase;
+    private final CurrentUserService currentUserService;
 
     public ListingController(CreateListingUseCase createListingUseCase,
                              ListPublicListingsUseCase listPublicListingsUseCase,
                              UploadListingAttachmentUseCase uploadListingAttachmentUseCase,
-                             GenerateListingAttachmentUploadUrlUseCase generateListingAttachmentUploadUrlUseCase) {
+                             GenerateListingAttachmentUploadUrlUseCase generateListingAttachmentUploadUrlUseCase,
+                             CurrentUserService currentUserService) {
         this.createListingUseCase = createListingUseCase;
         this.listPublicListingsUseCase = listPublicListingsUseCase;
         this.uploadListingAttachmentUseCase = uploadListingAttachmentUseCase;
         this.generateListingAttachmentUploadUrlUseCase = generateListingAttachmentUploadUrlUseCase;
+        this.currentUserService = currentUserService;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Creer une annonce", description = "Cree une annonce en statut PENDING_CERTIFICATION.")
     public ListingResponse create(@Valid @RequestBody CreateListingRequest request) {
+        String sellerId = currentUserService.getCurrentUserId();
         return ListingResponse.from(createListingUseCase.execute(
             request.eventId(),
-            request.sellerId(),
+            sellerId,
             request.price(),
             request.currency()
         ));
@@ -68,8 +73,8 @@ public class ListingController {
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Uploader une piece justificative", description = "Upload direct via API (local ou S3 selon provider).")
     public ListingAttachmentResponse uploadAttachment(@PathVariable String listingId,
-                                                      @RequestParam String sellerId,
                                                       @RequestPart("file") MultipartFile file) throws java.io.IOException {
+        String sellerId = currentUserService.getCurrentUserId();
         return ListingAttachmentResponse.from(uploadListingAttachmentUseCase.execute(
             listingId,
             sellerId,
@@ -83,9 +88,10 @@ public class ListingController {
     @Operation(summary = "Generer une URL d'upload presignee", description = "Retourne une URL PUT presignee quand le provider le supporte (S3).")
     public AttachmentUploadUrlResponse presignAttachmentUpload(@PathVariable String listingId,
                                                                @Valid @RequestBody GenerateAttachmentUploadUrlRequest request) {
+        String sellerId = currentUserService.getCurrentUserId();
         return AttachmentUploadUrlResponse.from(generateListingAttachmentUploadUrlUseCase.execute(
             listingId,
-            request.sellerId(),
+            sellerId,
             request.filename(),
             request.contentType()
         ));

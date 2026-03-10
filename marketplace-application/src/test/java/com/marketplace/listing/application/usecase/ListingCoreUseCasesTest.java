@@ -59,6 +59,7 @@ class ListingCoreUseCasesTest {
 
         assertThat(result.getSellerId()).isEqualTo("seller-1");
         assertThat(listed).hasSize(1);
+        verify(dispatcher, times(1)).dispatch(any(ApplicationEvent.class));
     }
 
     @Test

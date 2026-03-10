@@ -26,9 +26,9 @@ class ListingApiIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    @DisplayName("POST /api/listings exige authentification SELLER")
-    void shouldRequireSellerAuthenticationToCreateListing() throws Exception {
-        String payload = listingPayload("evt_new", "seller-seed-1", 70.00, "EUR");
+    @DisplayName("POST /api/listings exige authentification")
+    void shouldRequireAuthenticationToCreateListing() throws Exception {
+        String payload = listingPayload("evt_new", 70.00, "EUR");
 
         assertErrorCode(mockMvc.perform(post("/api/listings")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -36,28 +36,33 @@ class ListingApiIntegrationTest extends IntegrationTestBase {
             401,
             "AUTH-001");
 
+        String sellerToken = loginAndGetToken("seller", "seller123");
+
         mockMvc.perform(post("/api/listings")
-                .with(sellerAuth())
+                .with(bearer(sellerToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.status").value("PENDING_CERTIFICATION"));
 
         assertErrorCode(mockMvc.perform(post("/api/listings")
-                .with(invalidSellerAuth())
+                .with(bearer("invalid-token"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload)),
             401,
-            "AUTH-002");
+            "AUTH-001");
     }
 
     @Test
     @DisplayName("POST /api/certification/{id}/certify exige role CONTROLLER")
     void shouldRequireControllerRoleForCertification() throws Exception {
-        String payload = listingPayload("evt_cert", "seller-seed-1", 90.00, "EUR");
+        String payload = listingPayload("evt_cert", 90.00, "EUR");
+
+        String sellerToken = loginAndGetToken("seller", "seller123");
+        String controllerToken = loginAndGetToken("controller", "controller123");
 
         String body = mockMvc.perform(post("/api/listings")
-                .with(sellerAuth())
+                .with(bearer(sellerToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isCreated())
@@ -68,12 +73,12 @@ class ListingApiIntegrationTest extends IntegrationTestBase {
         String listingId = extractStringField(body, "id");
 
         assertErrorCode(mockMvc.perform(post("/api/certification/{listingId}/certify", listingId)
-                .with(sellerAuth())),
+                .with(bearer(sellerToken))),
             403,
             "AUTH-003");
 
         mockMvc.perform(post("/api/certification/{listingId}/certify", listingId)
-                .with(controllerAuth()))
+                .with(bearer(controllerToken)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("CERTIFIED"));
     }
@@ -81,10 +86,12 @@ class ListingApiIntegrationTest extends IntegrationTestBase {
     @Test
     @DisplayName("POST /api/listings/{id}/attachments upload une piece pour le vendeur")
     void shouldUploadListingAttachment() throws Exception {
-        String payload = listingPayload("evt_attach", "seller-seed-1", 95.00, "EUR");
+        String payload = listingPayload("evt_attach", 95.00, "EUR");
+
+        String sellerToken = loginAndGetToken("seller", "seller123");
 
         String body = mockMvc.perform(post("/api/listings")
-                .with(sellerAuth())
+                .with(bearer(sellerToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isCreated())
@@ -97,16 +104,14 @@ class ListingApiIntegrationTest extends IntegrationTestBase {
 
         mockMvc.perform(multipart("/api/listings/{listingId}/attachments", listingId)
                 .file(file)
-                .param("sellerId", "seller-seed-1")
-                .with(sellerAuth()))
+                .with(bearer(sellerToken)))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.key").exists())
             .andExpect(jsonPath("$.url").exists());
 
         String response = mockMvc.perform(multipart("/api/listings/{listingId}/attachments", listingId)
                 .file(file)
-                .param("sellerId", "seller-seed-1")
-                .with(sellerAuth()))
+                .with(bearer(sellerToken)))
             .andExpect(status().isCreated())
             .andReturn()
             .getResponse()
@@ -120,10 +125,13 @@ class ListingApiIntegrationTest extends IntegrationTestBase {
     @Test
     @DisplayName("POST /api/listings/{id}/attachments refuse un autre seller")
     void shouldRejectListingAttachmentWhenSellerMismatch() throws Exception {
-        String payload = listingPayload("evt_attach_forbidden", "seller-seed-1", 90.00, "EUR");
+        String payload = listingPayload("evt_attach_forbidden", 90.00, "EUR");
+
+        String sellerToken = loginAndGetToken("seller", "seller123");
+        String otherSellerToken = loginAndGetToken("seller2", "seller2123");
 
         String body = mockMvc.perform(post("/api/listings")
-                .with(sellerAuth())
+                .with(bearer(sellerToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isCreated())
@@ -136,8 +144,7 @@ class ListingApiIntegrationTest extends IntegrationTestBase {
 
         assertErrorCode(mockMvc.perform(multipart("/api/listings/{listingId}/attachments", listingId)
                 .file(file)
-                .param("sellerId", "seller-seed-2")
-                .with(sellerAuth())),
+                .with(bearer(otherSellerToken))),
             403,
             "LST-004");
     }
@@ -145,10 +152,12 @@ class ListingApiIntegrationTest extends IntegrationTestBase {
     @Test
     @DisplayName("POST /api/listings/{id}/attachments/presign retourne LST-005 en provider local")
     void shouldReturnPresignUnavailableOnLocalProvider() throws Exception {
-        String payload = listingPayload("evt_presign_local", "seller-seed-1", 88.00, "EUR");
+        String payload = listingPayload("evt_presign_local", 88.00, "EUR");
+
+        String sellerToken = loginAndGetToken("seller", "seller123");
 
         String body = mockMvc.perform(post("/api/listings")
-                .with(sellerAuth())
+                .with(bearer(sellerToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isCreated())
@@ -157,10 +166,10 @@ class ListingApiIntegrationTest extends IntegrationTestBase {
             .getContentAsString();
 
         String listingId = extractStringField(body, "id");
-        String presignRequestPayload = presignPayload("seller-seed-1", "proof.pdf", "application/pdf");
+        String presignRequestPayload = presignPayload("proof.pdf", "application/pdf");
 
         assertErrorCode(mockMvc.perform(post("/api/listings/{listingId}/attachments/presign", listingId)
-                .with(sellerAuth())
+                .with(bearer(sellerToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(presignRequestPayload)),
             503,
@@ -170,10 +179,12 @@ class ListingApiIntegrationTest extends IntegrationTestBase {
     @Test
     @DisplayName("POST /api/listings/{id}/attachments/presign valide les champs requis")
     void shouldValidatePresignRequestPayload() throws Exception {
-        String payload = listingPayload("evt_presign_validation", "seller-seed-1", 88.00, "EUR");
+        String payload = listingPayload("evt_presign_validation", 88.00, "EUR");
+
+        String sellerToken = loginAndGetToken("seller", "seller123");
 
         String body = mockMvc.perform(post("/api/listings")
-                .with(sellerAuth())
+                .with(bearer(sellerToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isCreated())
@@ -184,13 +195,12 @@ class ListingApiIntegrationTest extends IntegrationTestBase {
         String listingId = extractStringField(body, "id");
         String invalidPayload = """
             {
-              "sellerId":"seller-seed-1",
               "filename":"proof.pdf"
             }
             """;
 
         assertErrorCode(mockMvc.perform(post("/api/listings/{listingId}/attachments/presign", listingId)
-                .with(sellerAuth())
+                .with(bearer(sellerToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(invalidPayload)),
             400,

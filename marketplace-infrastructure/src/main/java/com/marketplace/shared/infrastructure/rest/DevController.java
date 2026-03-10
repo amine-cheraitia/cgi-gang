@@ -15,10 +15,10 @@ public class DevController {
     public Map<String, Object> seeds() {
         return Map.of(
             "users", List.of(
-                Map.of("username", "seller",     "password", "seller123",     "role", "SELLER"),
-                Map.of("username", "buyer",      "password", "buyer123",      "role", "BUYER"),
+                Map.of("username", "seller",     "password", "seller123",     "role", "CLIENT"),
+                Map.of("username", "buyer",      "password", "buyer123",      "role", "CLIENT"),
                 Map.of("username", "controller", "password", "controller123", "role", "CONTROLLER"),
-                Map.of("username", "admin",      "password", "admin123",      "role", "ADMIN + SELLER + BUYER + CONTROLLER")
+                Map.of("username", "admin",      "password", "admin123",      "role", "ADMIN,CONTROLLER,CLIENT")
             ),
             "listings", List.of(
                 Map.of("id", "lst_seed_001", "seller", "seller", "event", "evt_taylor_paris", "price", "80.00 EUR", "status", "CERTIFIED"),

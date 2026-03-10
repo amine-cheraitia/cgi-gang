@@ -36,10 +36,12 @@ class PaymentWebhookIntegrationTest extends IntegrationTestBase {
     @Test
     @DisplayName("Webhook PAID valide marque la commande et declenche la notification ORDER_PAID")
     void shouldMarkOrderPaidOnValidWebhook() throws Exception {
-        String payloadOrder = orderPayload("lst_seed_001", "buyer-seed-1");
+        String payloadOrder = orderPayload("lst_seed_001");
+
+        String buyerToken = loginAndGetToken("buyer", "buyer123");
 
         String orderBody = mockMvc.perform(post("/api/orders")
-                .with(buyerAuth())
+                .with(bearer(buyerToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payloadOrder))
             .andExpect(status().isCreated())
@@ -91,10 +93,12 @@ class PaymentWebhookIntegrationTest extends IntegrationTestBase {
     @Test
     @DisplayName("Webhook PAID rejoue est idempotent et ne casse pas le flux")
     void shouldBeIdempotentWhenPaidWebhookIsRetried() throws Exception {
-        String payloadOrder = orderPayload("lst_seed_001", "buyer-seed-1");
+        String payloadOrder = orderPayload("lst_seed_001");
+
+        String buyerToken = loginAndGetToken("buyer", "buyer123");
 
         String orderBody = mockMvc.perform(post("/api/orders")
-                .with(buyerAuth())
+                .with(bearer(buyerToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payloadOrder))
             .andExpect(status().isCreated())

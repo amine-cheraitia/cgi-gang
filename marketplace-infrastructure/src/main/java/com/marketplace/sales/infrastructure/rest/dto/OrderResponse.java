@@ -7,8 +7,6 @@ import java.math.BigDecimal;
 public record OrderResponse(
     String orderId,
     String listingId,
-    String buyerId,
-    String sellerId,
     String status,
     String paymentIntentId,
     String clientSecret,
@@ -30,8 +28,6 @@ public record OrderResponse(
         return new OrderResponse(
             order.getId(),
             order.getListingId(),
-            order.getBuyerId(),
-            order.getSellerId(),
             order.getStatus().name(),
             order.getStripePaymentIntentId(),
             order.getStripeClientSecret(),

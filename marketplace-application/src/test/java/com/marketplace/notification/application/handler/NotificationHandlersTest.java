@@ -40,6 +40,8 @@ class NotificationHandlersTest {
     @InjectMocks
     private ListingCertifiedNotificationHandler listingCertifiedHandler;
     @InjectMocks
+    private ListingPendingReviewNotificationHandler listingPendingHandler;
+    @InjectMocks
     private OrderPlacedNotificationHandler orderPlacedHandler;
     @InjectMocks
     private OrderPaidNotificationHandler orderPaidHandler;
@@ -60,6 +62,18 @@ class NotificationHandlersTest {
         ArgumentCaptor<NotificationCommand> commandCaptor = ArgumentCaptor.forClass(NotificationCommand.class);
         verify(sendNotificationUseCase).execute(commandCaptor.capture());
         assertThat(commandCaptor.getValue().eventType().name()).isEqualTo("LISTING_CERTIFIED");
+    }
+
+    @Test
+    void listingPendingHandlerShouldDispatchNotificationToController() {
+        ListingPendingReviewApplicationEvent event = new ListingPendingReviewApplicationEvent("listing-1", "evt-1");
+
+        assertThat(listingPendingHandler.supports(event)).isTrue();
+
+        listingPendingHandler.handle(event);
+
+        verify(sendNotificationUseCase).execute(org.mockito.ArgumentMatchers.argThat(cmd ->
+            cmd.eventType() == NotificationEventType.CONTROLLER_LISTINGS_PENDING));
     }
 
     @Test

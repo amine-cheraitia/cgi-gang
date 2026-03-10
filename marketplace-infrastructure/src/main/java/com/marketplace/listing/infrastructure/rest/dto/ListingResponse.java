@@ -8,19 +8,17 @@ import java.math.BigDecimal;
 public record ListingResponse(
     String id,
     String eventId,
-    String sellerId,
     BigDecimal price,
     String currency,
     ListingStatus status
 ) {
     public static ListingResponse from(Listing listing) {
         return new ListingResponse(
-            listing.getId(),
-            listing.getExternalEventId().value(),
-            listing.getSellerId(),
-            listing.getPrice().amount(),
-            listing.getPrice().currency().getCurrencyCode(),
-            listing.getStatus()
+                listing.getId(),
+                listing.getExternalEventId().value(),
+                listing.getPrice().amount(),
+                listing.getPrice().currency().getCurrencyCode(),
+                listing.getStatus()
         );
     }
 }

@@ -7,43 +7,39 @@ public final class MarketplaceTestDataFactory {
     private MarketplaceTestDataFactory() {
     }
 
-    public static String listingPayload(String eventId, String sellerId, double price, String currency) {
+    public static String listingPayload(String eventId, double price, String currency) {
         return String.format(Locale.US, """
             {
               "eventId":"%s",
-              "sellerId":"%s",
               "price":%.2f,
               "currency":"%s"
             }
-            """, eventId, sellerId, price, currency);
+            """, eventId, price, currency);
     }
 
-    public static String orderPayload(String listingId, String buyerId) {
+    public static String orderPayload(String listingId) {
         return """
             {
-              "listingId":"%s",
-              "buyerId":"%s"
+              "listingId":"%s"
             }
-            """.formatted(listingId, buyerId);
+            """.formatted(listingId);
     }
 
-    public static String waitlistPayload(String eventId, String userId) {
+    public static String waitlistPayload(String eventId) {
         return """
             {
-              "eventId":"%s",
-              "userId":"%s"
+              "eventId":"%s"
             }
-            """.formatted(eventId, userId);
+            """.formatted(eventId);
     }
 
-    public static String presignPayload(String sellerId, String filename, String contentType) {
+    public static String presignPayload(String filename, String contentType) {
         return """
             {
-              "sellerId":"%s",
               "filename":"%s",
               "contentType":"%s"
             }
-            """.formatted(sellerId, filename, contentType);
+            """.formatted(filename, contentType);
     }
 
     public static String paymentWebhookPayload(String orderId, String status, String providerTransactionId) {
