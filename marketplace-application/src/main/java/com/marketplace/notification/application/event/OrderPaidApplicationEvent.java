@@ -6,6 +6,7 @@ public record OrderPaidApplicationEvent(
     String orderId,
     String buyerId,
     String sellerId,
+    String buyerTotal,
     String sellerPayout,
     String platformRevenue
 ) implements ApplicationEvent {

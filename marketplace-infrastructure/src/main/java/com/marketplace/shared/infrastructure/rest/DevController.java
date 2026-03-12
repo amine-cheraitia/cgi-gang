@@ -1,6 +1,12 @@
 package com.marketplace.shared.infrastructure.rest;
 
+import com.marketplace.shared.domain.exception.BusinessException;
+import com.marketplace.shared.domain.exception.ErrorCode;
+import com.marketplace.user.infrastructure.persistence.SpringDataUserRepository;
+import com.marketplace.user.infrastructure.persistence.UserEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -10,6 +16,12 @@ import java.util.Map;
 @RestController
 @RequestMapping("/dev")
 public class DevController {
+
+    private final SpringDataUserRepository userRepository;
+
+    public DevController(SpringDataUserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @GetMapping("/seeds")
     public Map<String, Object> seeds() {
@@ -24,6 +36,24 @@ public class DevController {
                 Map.of("id", "lst_seed_001", "seller", "seller", "event", "evt_taylor_paris", "price", "80.00 EUR", "status", "CERTIFIED"),
                 Map.of("id", "lst_seed_002", "seller", "seller2", "event", "evt_taylor_paris", "price", "120.00 EUR", "status", "PENDING_CERTIFICATION")
             )
+        );
+    }
+
+    @PostMapping("/users/admin/email")
+    public Map<String, Object> updateAdminEmail(@RequestBody Map<String, String> payload) {
+        String username = payload.getOrDefault("username", "controller");
+        String newEmail = payload.get("email");
+        if (newEmail == null || newEmail.isBlank()) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+        }
+        UserEntity user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        user.setEmail(newEmail);
+        userRepository.save(user);
+        return Map.of(
+            "username", user.getUsername(),
+            "email", user.getEmail(),
+            "role", user.getRole()
         );
     }
 }

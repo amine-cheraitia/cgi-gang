@@ -36,11 +36,24 @@ public class CertifyListingUseCase {
         listing.certify();
         Listing saved = listingRepository.save(listing);
 
+        // Calcule une estimation de la repartition prix / net vendeur / commission
+        String price = saved.getPrice().amount().toPlainString()
+            + " " + saved.getPrice().currency().getCurrencyCode();
+        String sellerPayoutEstimate = saved.getPrice().amount()
+            .multiply(java.math.BigDecimal.valueOf(0.95)).toPlainString()
+            + " " + saved.getPrice().currency().getCurrencyCode();
+        String platformRevenueEstimate = saved.getPrice().amount()
+            .multiply(java.math.BigDecimal.valueOf(0.05)).toPlainString()
+            + " " + saved.getPrice().currency().getCurrencyCode();
+
         // Notifie le vendeur
         eventDispatcher.dispatch(new ListingCertifiedApplicationEvent(
             saved.getId(),
             saved.getSellerId(),
-            saved.getExternalEventId().value()
+            saved.getExternalEventId().value(),
+            price,
+            sellerPayoutEstimate,
+            platformRevenueEstimate
         ));
 
         // FIFO : notifie uniquement le PREMIER inscrit en attente (WAITING)

@@ -21,7 +21,12 @@ class EmailTemplateStrategyTest {
             "seller@marketplace.local",
             "seller",
             NotificationEventType.LISTING_CERTIFIED,
-            Map.of("eventName", "Taylor Swift")
+            Map.of(
+                "eventName", "Taylor Swift",
+                "price", "90.00 EUR",
+                "sellerPayoutEstimate", "76.50 EUR",
+                "platformRevenueEstimate", "13.50 EUR"
+            )
         );
 
         EmailMessage message = strategy.build(command);
@@ -29,6 +34,9 @@ class EmailTemplateStrategyTest {
         assertThat(message.subject()).contains("certifie");
         assertThat(message.body()).contains("seller");
         assertThat(message.body()).contains("Taylor Swift");
+        assertThat(message.body()).contains("90.00 EUR");
+        assertThat(message.body()).contains("76.50 EUR");
+        assertThat(message.body()).contains("13.50 EUR");
         assertThat(message.htmlBody()).contains("<html");
         assertThat(message.htmlBody()).contains("Taylor Swift");
     }

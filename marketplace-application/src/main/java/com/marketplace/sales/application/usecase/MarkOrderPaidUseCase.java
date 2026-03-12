@@ -36,6 +36,7 @@ public class MarkOrderPaidUseCase {
             saved.getId(),
             saved.getBuyerId(),
             saved.getSellerId(),
+            saved.getBuyerTotal().amount().toPlainString() + " " + saved.getBuyerTotal().currency().getCurrencyCode(),
             saved.getSellerPayout().amount().toPlainString() + " " + saved.getSellerPayout().currency().getCurrencyCode(),
             saved.getPlatformRevenue().amount().toPlainString() + " " + saved.getPlatformRevenue().currency().getCurrencyCode()
         ));

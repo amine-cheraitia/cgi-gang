@@ -54,7 +54,8 @@ class NotificationHandlersTest {
     void listingCertifiedHandlerShouldSupportAndDispatchNotification() {
         when(userContactProvider.getByUserId("seller-1"))
             .thenReturn(new UserContactProvider.UserContact("seller-1", "seller", "seller@ticketio.app"));
-        ListingCertifiedApplicationEvent event = new ListingCertifiedApplicationEvent("listing-1", "seller-1", "evt-1");
+        ListingCertifiedApplicationEvent event = new ListingCertifiedApplicationEvent(
+            "listing-1", "seller-1", "evt-1", "90.00 EUR", "76.50 EUR", "13.50 EUR");
 
         assertThat(listingCertifiedHandler.supports(event)).isTrue();
         assertThat(listingCertifiedHandler.supports(new DummyEvent())).isFalse();
@@ -86,11 +87,12 @@ class NotificationHandlersTest {
             .thenReturn(new UserContactProvider.UserContact("seller-1", "seller", "seller@ticketio.app"));
 
         orderPlacedHandler.handle(new OrderPlacedApplicationEvent("ord-1", "buyer-1", "100 EUR"));
-        orderPaidHandler.handle(new OrderPaidApplicationEvent("ord-1", "buyer-1", "seller-1", "90 EUR", "10 EUR"));
+        orderPaidHandler.handle(new OrderPaidApplicationEvent("ord-1", "buyer-1", "seller-1", "100 EUR", "90 EUR", "10 EUR"));
 
         verify(sendNotificationUseCase).execute(org.mockito.ArgumentMatchers.argThat(cmd ->
             cmd.eventType().name().equals("ORDER_PLACED")));
-        verify(sendNotificationUseCase).execute(org.mockito.ArgumentMatchers.argThat(cmd ->
+        // Deux notifications ORDER_PAID : vendeur + acheteur
+        verify(sendNotificationUseCase, org.mockito.Mockito.times(2)).execute(org.mockito.ArgumentMatchers.argThat(cmd ->
             cmd.eventType().name().equals("ORDER_PAID")));
     }
 
@@ -99,7 +101,7 @@ class NotificationHandlersTest {
         when(userContactProvider.getByUserId("unknown")).thenThrow(new IllegalArgumentException("not found"));
 
         assertThatThrownBy(() -> listingCertifiedHandler.handle(
-            new ListingCertifiedApplicationEvent("listing-1", "unknown", "evt-1")))
+            new ListingCertifiedApplicationEvent("listing-1", "unknown", "evt-1", "90.00 EUR", "76.50 EUR", "13.50 EUR")))
             .isInstanceOf(BusinessException.class)
             .extracting("code")
             .isEqualTo(ErrorCode.USER_NOT_FOUND);

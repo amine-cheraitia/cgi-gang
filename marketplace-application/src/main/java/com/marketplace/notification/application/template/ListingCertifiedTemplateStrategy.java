@@ -18,6 +18,8 @@ public class ListingCertifiedTemplateStrategy implements EmailTemplateStrategy {
         String eventName  = command.data().getOrDefault("eventName", "votre evenement");
         String listingId  = command.data().getOrDefault("listingId", "N/A");
         String price      = command.data().getOrDefault("price", "");
+        String sellerPayoutEstimate    = command.data().getOrDefault("sellerPayoutEstimate", "");
+        String platformRevenueEstimate = command.data().getOrDefault("platformRevenueEstimate", "");
 
         String subject = "Votre billet est certifie \uD83D\uDD16 et en vente !";
 
@@ -25,9 +27,13 @@ public class ListingCertifiedTemplateStrategy implements EmailTemplateStrategy {
             + "Bonne nouvelle ! Votre billet pour " + eventName + " a ete certifie.\n"
             + "Il est maintenant visible sur Ticketio et peut etre achete par des acheteurs.\n"
             + (price.isBlank() ? "" : "Prix de vente : " + price + "\n")
+            + (sellerPayoutEstimate.isBlank() ? "" : "Net vendeur estime : " + sellerPayoutEstimate + "\n")
+            + (platformRevenueEstimate.isBlank() ? "" : "Commission plateforme estimee : " + platformRevenueEstimate + "\n")
             + "\nL'equipe Ticketio";
 
         String priceRow = price.isBlank() ? "" : EmailHtmlLayout.infoRow("Prix de vente", price);
+        String sellerRow = sellerPayoutEstimate.isBlank() ? "" : EmailHtmlLayout.infoRow("Net vendeur estime", sellerPayoutEstimate);
+        String platformRow = platformRevenueEstimate.isBlank() ? "" : EmailHtmlLayout.infoRow("Commission plateforme estimee", platformRevenueEstimate);
 
         String htmlBody = EmailHtmlLayout.wrap(
             subject,
@@ -37,6 +43,8 @@ public class ListingCertifiedTemplateStrategy implements EmailTemplateStrategy {
                 EmailHtmlLayout.infoRow("Evenement", eventName),
                 EmailHtmlLayout.infoRow("Reference listing", listingId),
                 priceRow,
+                sellerRow,
+                platformRow,
                 EmailHtmlLayout.infoRow("Statut", "CERTIFIE – en vente")
               )
             + "<p style=\"margin-top:20px;color:#6b7280;font-size:13px;\">"

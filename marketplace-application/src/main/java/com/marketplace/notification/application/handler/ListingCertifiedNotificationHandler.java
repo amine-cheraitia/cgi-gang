@@ -43,7 +43,10 @@ public class ListingCertifiedNotificationHandler implements ApplicationEventHand
             NotificationEventType.LISTING_CERTIFIED,
             Map.of(
                 "eventName", event.eventId(),
-                "listingId", event.listingId()
+                "listingId", event.listingId(),
+                "price", event.price(),
+                "sellerPayoutEstimate", event.sellerPayoutEstimate(),
+                "platformRevenueEstimate", event.platformRevenueEstimate()
             )
         ));
     }

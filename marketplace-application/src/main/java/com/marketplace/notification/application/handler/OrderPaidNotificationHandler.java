@@ -32,19 +32,37 @@ public class OrderPaidNotificationHandler implements ApplicationEventHandler<Ord
     @Override
     public void handle(OrderPaidApplicationEvent event) {
         UserContactProvider.UserContact sellerContact;
+        UserContactProvider.UserContact buyerContact;
         try {
             sellerContact = userContactProvider.getByUserId(event.sellerId());
+            buyerContact = userContactProvider.getByUserId(event.buyerId());
         } catch (IllegalArgumentException ex) {
             throw new BusinessException(ErrorCode.USER_NOT_FOUND, ex.getMessage());
         }
+
+        // Email vendeur : focus sur le montant qu'il touche et la commission
         sendNotificationUseCase.execute(new NotificationCommand(
             sellerContact.email(),
             sellerContact.username(),
             NotificationEventType.ORDER_PAID,
             Map.of(
                 "orderId", event.orderId(),
+                "role", "SELLER",
+                "buyerTotal", event.buyerTotal(),
                 "sellerPayout", event.sellerPayout(),
                 "platformRevenue", event.platformRevenue()
+            )
+        ));
+
+        // Email acheteur : confirmation de paiement et montant payé
+        sendNotificationUseCase.execute(new NotificationCommand(
+            buyerContact.email(),
+            buyerContact.username(),
+            NotificationEventType.ORDER_PAID,
+            Map.of(
+                "orderId", event.orderId(),
+                "role", "BUYER",
+                "buyerTotal", event.buyerTotal()
             )
         ));
     }
