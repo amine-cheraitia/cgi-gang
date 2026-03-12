@@ -36,15 +36,19 @@ public class CertifyListingUseCase {
         listing.certify();
         Listing saved = listingRepository.save(listing);
 
-        // Calcule une estimation de la repartition prix / net vendeur / commission
-        String price = saved.getPrice().amount().toPlainString()
-            + " " + saved.getPrice().currency().getCurrencyCode();
-        String sellerPayoutEstimate = saved.getPrice().amount()
-            .multiply(java.math.BigDecimal.valueOf(0.95)).toPlainString()
-            + " " + saved.getPrice().currency().getCurrencyCode();
-        String platformRevenueEstimate = saved.getPrice().amount()
-            .multiply(java.math.BigDecimal.valueOf(0.05)).toPlainString()
-            + " " + saved.getPrice().currency().getCurrencyCode();
+        // Calcule une estimation de la repartition prix / net vendeur / commission (2 decimales)
+        java.math.BigDecimal priceAmount = saved.getPrice().amount().setScale(2, java.math.RoundingMode.HALF_UP);
+        java.math.BigDecimal sellerAmount = saved.getPrice().amount()
+            .multiply(java.math.BigDecimal.valueOf(0.95))
+            .setScale(2, java.math.RoundingMode.HALF_UP);
+        java.math.BigDecimal platformAmount = saved.getPrice().amount()
+            .multiply(java.math.BigDecimal.valueOf(0.05))
+            .setScale(2, java.math.RoundingMode.HALF_UP);
+
+        String currency = saved.getPrice().currency().getCurrencyCode();
+        String price = priceAmount.toPlainString() + " " + currency;
+        String sellerPayoutEstimate = sellerAmount.toPlainString() + " " + currency;
+        String platformRevenueEstimate = platformAmount.toPlainString() + " " + currency;
 
         // Notifie le vendeur
         eventDispatcher.dispatch(new ListingCertifiedApplicationEvent(
