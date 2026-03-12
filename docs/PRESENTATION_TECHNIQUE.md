@@ -103,7 +103,7 @@ Document de soutenance : outils, langages, dépendances externes et découpage t
 
 | Dépendance | Version | Rôle | Justification |
 |---|---|---|---|
-| **Spring Security** | (Spring Boot BOM) | Authentification + Autorisation | HTTP Basic Auth ; contrôle d'accès par rôle (`SELLER`, `BUYER`, `CONTROLLER`) sur chaque endpoint ; gestion des erreurs 401/403 |
+| **Spring Security** | (Spring Boot BOM) | Authentification + Autorisation | Authentification JWT Bearer ; contrôle d'accès par rôle (`CLIENT`, `CONTROLLER`, `ADMIN`) sur les endpoints ; gestion des erreurs 401/403 avec codes `AUTH-*` |
 
 ### 5.4 Intégrations externes
 

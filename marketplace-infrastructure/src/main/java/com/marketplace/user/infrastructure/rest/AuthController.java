@@ -44,7 +44,7 @@ public class AuthController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Créer un compte", description = "Inscrit un nouvel utilisateur avec le role SELLER ou BUYER.")
+    @Operation(summary = "Créer un compte", description = "Inscrit un nouvel utilisateur 'client' (achat / vente).")
     public UserProfileResponse register(@Valid @RequestBody RegisterRequest request) {
         if (userRepository.existsByUsername(request.username())) {
             throw new BusinessException(ErrorCode.USER_ALREADY_EXISTS);
@@ -57,7 +57,8 @@ public class AuthController {
         user.setId(UUID.randomUUID().toString());
         user.setUsername(request.username());
         user.setEmail(request.email());
-        user.setRole(request.role().toUpperCase());
+        // Tous les comptes créés via l'API publique sont des clients
+        user.setRole("CLIENT");
         user.setPassword(passwordEncoder.encode(request.password()));
 
         userRepository.save(user);

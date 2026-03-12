@@ -21,7 +21,7 @@ Document de présentation pour la soutenance : besoins utilisateurs et découpag
 
 Les besoins sont exprimés par **type d’acteur** : chaque rôle a des objectifs et des droits distincts.
 
-### 2.1 Vendeur (SELLER)
+### 2.1 Client vendeur
 
 | Besoin | Description | Réponse fonctionnelle |
 |--------|-------------|------------------------|
@@ -35,7 +35,7 @@ Les besoins sont exprimés par **type d’acteur** : chaque rôle a des objectif
 
 ---
 
-### 2.2 Acheteur (BUYER)
+### 2.2 Client acheteur
 
 | Besoin | Description | Réponse fonctionnelle |
 |--------|-------------|------------------------|
@@ -69,7 +69,7 @@ Les besoins sont exprimés par **type d’acteur** : chaque rôle a des objectif
 |--------|-------------|------------------------|
 | Parcourir le catalogue | Découvrir les événements sans compte. | Recherche et détail d’événements (GET publics). |
 | Voir les billets en vente | Comparer les offres avant de s’inscrire. | Liste des annonces certifiées (GET public). |
-| S’inscrire | Créer un compte pour acheter ou vendre. | Inscription (register) avec rôle SELLER ou BUYER. |
+| S’inscrire | Créer un compte pour acheter ou vendre. | Inscription (register) créant un compte **client** unique (peut acheter et vendre). |
 
 **Résumé :** Consultation **publique** du catalogue et des annonces ; **inscription** pour accéder aux actions métier.
 
@@ -83,9 +83,9 @@ Le projet est découpé en **blocs fonctionnels** alignés sur les bounded conte
 
 ### 3.1 Authentification et utilisateurs (Auth)
 
-- **Inscription** : création de compte (email, username, password, rôle SELLER ou BUYER).
-- **Profil connecté** : endpoint « moi » (GET /api/auth/me) pour vérifier l’authentification et récupérer l’identité (HTTP Basic).
-- **Sécurité** : authentification HTTP Basic ; rôles SELLER, BUYER, CONTROLLER ; contrôle d’accès par endpoint.
+- **Inscription** : création de compte client (email, username, password). Un même client peut vendre et acheter.
+- **Profil connecté** : endpoint « moi » (GET /api/auth/me) pour vérifier l’authentification et récupérer l’identité (JWT).
+- **Sécurité** : authentification JWT Bearer ; rôle `CLIENT` pour les opérations d’achat/vente, rôles `CONTROLLER`/`ADMIN` pour le back‑office.
 
 **Périmètre :** Gestion de l’identité et des droits d’accès aux autres blocs.
 
@@ -103,15 +103,15 @@ Le projet est découpé en **blocs fonctionnels** alignés sur les bounded conte
 
 ### 3.3 Annonces de billets (Listings)
 
-- **Création d’annonce** : association événement (eventId) + vendeur (sellerId) + prix (et devise) ; statut initial « PENDING_CERTIFICATION ».
+- **Création d’annonce** : association événement (eventId) + vendeur (client connecté) + prix (et devise) ; statut initial « PENDING_CERTIFICATION ».
 - **Liste des annonces certifiées** : annonces au statut « CERTIFIED » et disponibles à l’achat (consultation publique).
 - **Pièce justificative** :  
   - upload direct d’un fichier (multipart) ;  
   - ou génération d’une URL présignée (S3) pour upload côté client.  
   Stockage abstrait (local ou S3 selon configuration).
 
-**Périmètre :** Cycle de vie des annonces côté vendeur jusqu’à mise en vente.  
-**Accès :** Création et gestion des annonces réservées au rôle SELLER ; consultation des annonces certifiées en lecture seule publique.
+**Périmètre :** Cycle de vie des annonces côté client vendeur jusqu’à mise en vente.  
+**Accès :** Création et gestion des annonces réservées aux utilisateurs authentifiés (rôle `CLIENT`) ; consultation des annonces certifiées en lecture seule publique.
 
 ---
 
@@ -128,12 +128,12 @@ Le projet est découpé en **blocs fonctionnels** alignés sur les bounded conte
 
 ### 3.5 Commandes et paiements (Orders / Sales)
 
-- **Créer une commande** : à partir d’un listing certifié (listingId, buyerId) ; calcul du montant acheteur (prix + commission plateforme) ; statut initial « PENDING_PAYMENT » ; déclenchement email « Commande enregistrée » à l’acheteur.
+- **Créer une commande** : à partir d’un listing certifié (listingId, client authentifié) ; calcul du montant acheteur (prix + commission plateforme) ; statut initial « PENDING_PAYMENT » ; déclenchement email « Commande enregistrée » à l’acheteur.
 - **Consulter une commande** : détail d’une commande (identifiant, statut, pricing : prix billet, commission, total).
 - **Marquer une commande comme payée** : passage au statut « PAID » (après réception du paiement) ; déclenchement email « Paiement confirmé » au vendeur (avec détail vendeur + commission plateforme).
 
 **Périmètre :** Cycle de vie de la commande (création → paiement → confirmation).  
-**Accès :** Création et consultation des commandes pour BUYER (et vendeur selon règles métier) ; « marquer payée » réservé au CONTROLLER.
+**Accès :** Création et consultation des commandes pour les clients authentifiés ; « marquer payée » réservé au CONTROLLER / ADMIN.
 
 ---
 
@@ -149,11 +149,11 @@ Le projet est découpé en **blocs fonctionnels** alignés sur les bounded conte
 
 ### 3.7 Liste d’attente (Waitlist)
 
-- **S’inscrire** : ajout d’un acheteur (userId) à la liste d’attente d’un événement (eventId).
-- **Se désinscrire** : retrait de la liste d’attente (eventId + userId).
+- **S’inscrire** : ajout d’un client (utilisateur authentifié) à la liste d’attente d’un événement (eventId).
+- **Se désinscrire** : retrait de la liste d’attente (eventId).
 
 **Périmètre :** Gestion des inscriptions par événement ; les notifications « billets disponibles » sont déclenchées par le bloc Certification lors de la certification d’une annonce pour cet événement.  
-**Accès :** Réservé au rôle BUYER.
+**Accès :** Réservé aux clients authentifiés.
 
 ---
 
@@ -174,15 +174,15 @@ Le projet est découpé en **blocs fonctionnels** alignés sur les bounded conte
 
 ## 4. Synthèse du découpage
 
-| Bloc fonctionnel        | Acteurs principaux     | Rôle métier principal                          |
-|--------------------------|------------------------|-----------------------------------------------|
-| Auth                     | Tous                   | Identité, inscription, contrôle d’accès       |
-| Catalog                  | Public / tous          | Référentiel d’événements (lecture)             |
-| Listings                 | SELLER, public (lecture) | Annonces, pièces justificatives, visibilité  |
-| Certification            | CONTROLLER             | Validation des annonces, notifications         |
-| Orders / Sales           | BUYER, CONTROLLER      | Commandes, pricing, statut payé               |
-| Payments (webhooks)      | Système / prestataire  | Réconciliation paiement → commande            |
-| Waitlist                 | BUYER                  | Inscriptions / désinscriptions par événement  |
-| Notification             | Système                | Emails (commande, paiement, certification, waitlist) |
+| Bloc fonctionnel        | Acteurs principaux          | Rôle métier principal                          |
+|--------------------------|----------------------------|-----------------------------------------------|
+| Auth                     | Clients, contrôleurs, admin| Identité, inscription, contrôle d’accès       |
+| Catalog                  | Public / tous              | Référentiel d’événements (lecture)             |
+| Listings                 | Clients (vendeurs), public | Annonces, pièces justificatives, visibilité  |
+| Certification            | CONTROLLER / ADMIN         | Validation des annonces, notifications         |
+| Orders / Sales           | Clients, CONTROLLER/ADMIN  | Commandes, pricing, statut payé               |
+| Payments (webhooks)      | Système / prestataire      | Réconciliation paiement → commande            |
+| Waitlist                 | Clients                    | Inscriptions / désinscriptions par événement  |
+| Notification             | Système                    | Emails (commande, paiement, certification, waitlist) |
 
 Ce découpage permet de présenter le projet de manière claire en soutenance : **qui** a **quel besoin** et **quel bloc fonctionnel** y répond.

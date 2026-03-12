@@ -10,13 +10,13 @@ class UserEntityTest {
     void shouldExposeGettersAndSetters() {
         UserEntity entity = new UserEntity();
         entity.setId("usr-1");
-        entity.setUsername("buyer");
-        entity.setRole("BUYER");
-        entity.setEmail("buyer@marketplace.local");
+        entity.setUsername("client");
+        entity.setRole("CLIENT");
+        entity.setEmail("client@marketplace.local");
 
         assertThat(entity.getId()).isEqualTo("usr-1");
-        assertThat(entity.getUsername()).isEqualTo("buyer");
-        assertThat(entity.getRole()).isEqualTo("BUYER");
-        assertThat(entity.getEmail()).isEqualTo("buyer@marketplace.local");
+        assertThat(entity.getUsername()).isEqualTo("client");
+        assertThat(entity.getRole()).isEqualTo("CLIENT");
+        assertThat(entity.getEmail()).isEqualTo("client@marketplace.local");
     }
 }

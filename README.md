@@ -156,7 +156,7 @@ classDiagram
 | Bounded context | Prefixe | Exemples |
 |---|---|---|
 | Catalog | `CAT` | `CAT-001 EVENT_NOT_FOUND`, `CAT-002 CATALOG_PROVIDER_UNAVAILABLE` |
-| Listing | `LST` | `LST-001 LISTING_NOT_FOUND`, `LST-002 LISTING_NOT_CERTIFIED`, `LST-003 LISTING_INVALID_STATE`, `LST-004 LISTING_SELLER_MISMATCH`, `LST-005 LISTING_ATTACHMENT_PRESIGN_UNAVAILABLE` |
+| Listing | `LST` | `LST-001 LISTING_NOT_FOUND`, `LST-002 LISTING_NOT_CERTIFIED`, `LST-003 LISTING_INVALID_STATE`, `LST-004 LISTING_SELLER_MISMATCH`, `LST-005 LISTING_ATTACHMENT_PRESIGN_UNAVAILABLE`, `LST-006 LISTING_MISSING_TICKET_ATTACHMENT` |
 | Order | `ORD` | `ORD-001 ORDER_NOT_FOUND`, `ORD-002 ORDER_ALREADY_PAID`, `ORD-003 ORDER_INVALID_STATE` |
 | Payment | `PAY` | `PAY-001 PAYMENT_PROVIDER_ERROR`, `PAY-002 PAYMENT_WEBHOOK_INVALID` |
 | Waitlist | `WAI` | `WAI-001 WAITLIST_SUBSCRIPTION_NOT_FOUND`, `WAI-002 WAITLIST_ALREADY_SUBSCRIBED` |
@@ -275,11 +275,12 @@ Contrat securite couvre identifiants invalides -> `AUTH-002`.
 - `POST /api/waitlist/subscriptions`
 - `DELETE /api/waitlist/subscriptions?eventId=...&userId=...`
 
-## Security (HTTP Basic)
+## Security (JWT + rôles)
 
-- seller / seller123 -> SELLER
+- seller / seller123 -> CLIENT
+- buyer / buyer123 -> CLIENT
 - controller / controller123 -> CONTROLLER
-- buyer / buyer123 -> BUYER
+- admin / admin123 -> ADMIN,CONTROLLER,CLIENT
 
 ## Lancement des tests (tous types)
 
@@ -344,5 +345,6 @@ Workflow dedie: `.github/workflows/mutation.yml`
 ## Swagger / OpenAPI
 
 - UI: `http://localhost:8080/swagger-ui/index.html`
+- UI: `http://localhost:8082/swagger-ui/index.html` (docker-compose)
 - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
 

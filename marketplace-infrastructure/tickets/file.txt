@@ -1,1 +1,25 @@
-ok
+Guide pour retrouver un ticket uploade en local (mode Docker).
+
+1. Le storage local est configure ainsi (voir application.yml) :
+   - storage.provider = local
+   - storage.local.root-path = ./data/storage
+   - Dans le conteneur Docker, ce chemin correspond a : /app/data/storage
+   - Le volume docker-compose s'appelle : marketplace-storage
+
+2. Quand on uploade une piece jointe via POST /api/listings/{listingId}/attachments,
+   la reponse contient :
+   - "key": par exemple "listing/93ebfa82-.../2135430280.pdf"
+   - "url": par exemple "http://localhost:8082/files/listing/93ebfa82-.../2135430280.pdf"
+
+3. Pour verifier que le fichier existe dans le conteneur :
+   - docker compose exec marketplace-api ls -R /app/data/storage
+   - docker compose exec marketplace-api ls /app/data/storage/listing/93ebfa82-.../
+
+4. Pour copier le fichier du conteneur vers la machine hote (dans ce dossier tickets/) :
+   - docker compose cp marketplace-api:/app/data/storage/listing/93ebfa82-.../2135430280.pdf marketplace-infrastructure/tickets/
+
+5. Pour que l'evaluatrice puisse tester :
+   - Uploader un PDF via Postman (Upload attachment (CLIENT vendeur))
+   - Recuperer la valeur du champ "key" dans la reponse JSON
+   - Utiliser "key" pour construire le chemin sous /app/data/storage/
+   - Utiliser les commandes ci-dessus (exec / cp) pour lister ou recuperer le fichier.

@@ -9,9 +9,10 @@ public record EventResponse(
     String name,
     Instant date,
     String venue,
-    String city
+    String city,
+    int availableListings
 ) {
-    public static EventResponse from(ExternalEvent event) {
-        return new EventResponse(event.id(), event.name(), event.date(), event.venue(), event.city());
+    public static EventResponse from(ExternalEvent event, int availableListings) {
+        return new EventResponse(event.id(), event.name(), event.date(), event.venue(), event.city(), availableListings);
     }
 }
